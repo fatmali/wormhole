@@ -1,0 +1,24 @@
+title: Wormhole
+description: The Inter-Agent Context Bridge - A local-first MCP server for AI agent context sharing
+url: https://fatmali.github.io
+baseurl: /wormhole
+
+# Theme settings
+theme: null
+remote_theme: null
+
+# Build settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Exclude from processing
+exclude:
+  - node_modules
+  - src
+  - dist
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - README.md
