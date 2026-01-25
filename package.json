@@ -1,9 +1,17 @@
 {
-  "name": "wormhole",
+  "name": "wormhole-mcp",
   "version": "2.0.0",
   "description": "The Inter-Agent Context Bridge - MCP server for shared agent memory",
   "main": "dist/server.js",
   "type": "module",
+  "bin": {
+    "wormhole-mcp": "./dist/server.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -12,10 +20,14 @@
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "ai",
     "agent",
     "context",
-    "claude"
+    "claude",
+    "copilot",
+    "cursor",
+    "multi-agent"
   ],
   "author": "",
   "license": "MIT",

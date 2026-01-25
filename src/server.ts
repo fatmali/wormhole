@@ -9,16 +9,9 @@ import {
 
 import { loadConfig, ensureWormholeDir } from './config.js';
 import { initDatabase, cleanupOldEvents } from './db.js';
+import { LogSchema, GetRecentSchema, CheckConflictsSchema, CleanupSchema, StartSessionSchema, EndSessionSchema, ListSessionsSchema, SwitchSessionSchema } from './schemas.js';
+import { TOOL_DEFINITIONS } from './tools.js';
 import {
-    TOOL_DEFINITIONS,
-    LogSchema,
-    GetRecentSchema,
-    CheckConflictsSchema,
-    CleanupSchema,
-    StartSessionSchema,
-    EndSessionSchema,
-    ListSessionsSchema,
-    SwitchSessionSchema,
     handleLog,
     handleGetRecent,
     handleCheckConflicts,
@@ -26,8 +19,8 @@ import {
     handleStartSession,
     handleEndSession,
     handleListSessions,
-    handleSwitchSession,
-} from './tools.js';
+    handleSwitchSession
+} from './handlers.js';
 
 async function main() {
     // Initialize
@@ -56,14 +49,12 @@ async function main() {
         }
     );
 
-    // List available tools
     server.setRequestHandler(ListToolsRequestSchema, async () => {
         return {
             tools: TOOL_DEFINITIONS,
         };
     });
 
-    // Handle tool calls
     server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { name, arguments: args } = request.params;
 
@@ -137,7 +128,6 @@ async function main() {
         }
     });
 
-    // Connect via stdio
     const transport = new StdioServerTransport();
     await server.connect(transport);
 

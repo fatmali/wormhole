@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Wormhole - The Inter-Agent Context Bridge. A local-first MCP server that enables AI agents to share unified short-term memory.">
+    <meta name="description"
+        content="Wormhole - The Inter-Agent Context Bridge. A local-first MCP server that enables AI agents to share unified short-term memory.">
     <title>Wormhole 🌀 | Inter-Agent Context Bridge</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <div class="bg-animation"><div class="wormhole-portal"></div></div>
+    <div class="bg-animation">
+        <div class="wormhole-portal"></div>
+    </div>
 
     <nav class="navbar">
         <div class="nav-container">
@@ -31,28 +38,41 @@
             <div class="hero-badge"><span class="badge-dot"></span>MCP Server</div>
             <h1 class="hero-title"><span class="title-gradient">Wormhole</span> 🌀</h1>
             <p class="hero-subtitle">The Inter-Agent Context Bridge</p>
-            <p class="hero-description">A local-first MCP server enabling <span class="highlight">Claude Code, Copilot, Cursor</span> to share unified short-term memory.</p>
+            <p class="hero-description">A local-first MCP server enabling <span class="highlight">Claude Code, Copilot,
+                    Cursor</span> to share unified short-term memory.</p>
             <div class="hero-actions">
                 <a href="#installation" class="btn btn-primary">Get Started →</a>
                 <a href="https://github.com/fatmali/wormhole" class="btn btn-secondary">View on GitHub</a>
             </div>
-            <div class="hero-stats">
-                <div class="stat"><span class="stat-value">~400</span><span class="stat-label">tokens/task</span></div>
-                <div class="stat-divider"></div>
-                <div class="stat"><span class="stat-value">90%</span><span class="stat-label">smaller</span></div>
-                <div class="stat-divider"></div>
-                <div class="stat"><span class="stat-value">3+</span><span class="stat-label">agents</span></div>
-            </div>
         </div>
         <div class="hero-visual">
-            <div class="architecture-diagram">
-                <div class="agent-nodes">
-                    <div class="agent-node">🤖 Claude</div>
-                    <div class="agent-node">⚡ Copilot</div>
-                    <div class="agent-node">📝 Cursor</div>
+            <div class="flow-diagram">
+                <div class="flow-problem">
+                    <span class="flow-label">Without Wormhole</span>
+                    <div class="isolated-agents">
+                        <div class="iso-agent">🤖 Claude<div class="iso-bubble">?</div>
+                        </div>
+                        <div class="iso-agent">⚡ Copilot<div class="iso-bubble">?</div>
+                        </div>
+                        <div class="iso-agent">📝 Cursor<div class="iso-bubble">?</div>
+                        </div>
+                    </div>
+                    <p class="flow-caption">Agents can't see each other's work</p>
                 </div>
-                <div class="wormhole-center"><span>🌀</span><span>Wormhole</span></div>
-                <div class="db-node">💾 SQLite</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-solution">
+                    <span class="flow-label">With Wormhole</span>
+                    <div class="connected-diagram">
+                        <div class="connected-agents">
+                            <div class="conn-agent">🤖</div>
+                            <div class="conn-agent">⚡</div>
+                            <div class="conn-agent">📝</div>
+                        </div>
+                        <div class="conn-lines"></div>
+                        <div class="wormhole-hub">🌀</div>
+                    </div>
+                    <p class="flow-caption">Shared context & history</p>
+                </div>
             </div>
         </div>
     </header>
@@ -64,75 +84,156 @@
                 <h2>Powerful Features</h2>
             </div>
             <div class="features-grid">
-                <div class="feature-card"><div class="feature-icon">📝</div><h3>Universal Logging</h3><p>Single <code>log</code> tool for any action type.</p></div>
-                <div class="feature-card"><div class="feature-icon">📦</div><h3>Session Management</h3><p>Named work sessions with isolation.</p></div>
-                <div class="feature-card"><div class="feature-icon">⚡</div><h3>Token Optimized</h3><p>~400 tokens vs ~5,000 without optimization.</p></div>
-                <div class="feature-card"><div class="feature-icon">⚠️</div><h3>Conflict Detection</h3><p>Know when agents touch the same files.</p></div>
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Universal Logging</h3>
+                    <p>Single <code>log</code> tool for any action type.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Session Management</h3>
+                    <p>Named work sessions with isolation.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Token Optimized</h3>
+                    <p>~400 tokens vs ~5,000 without optimization.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚠️</div>
+                    <h3>Conflict Detection</h3>
+                    <p>Know when agents touch the same files.</p>
+                </div>
             </div>
         </div>
     </section>
 
     <section id="installation" class="section installation">
         <div class="container">
-            <div class="section-header"><span class="section-tag">Quick Start</span><h2>Installation</h2></div>
+            <div class="section-header"><span class="section-tag">Quick Start</span>
+                <h2>Installation</h2>
+            </div>
             <div class="install-steps">
-                <div class="install-step"><div class="step-number">1</div><div class="step-content"><h3>Clone & Build</h3><pre class="code-block"><code>cd wormhole
-npm install
-npm run build</code></pre></div></div>
-                <div class="install-step"><div class="step-number">2</div><div class="step-content"><h3>Configure Claude Desktop</h3><p>Add to <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>:</p><pre class="code-block"><code>{
+                <div class="install-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Configure Your Agent</h3>
+                        <p><strong>Claude Code</strong> — Add to <code>~/.claude/claude_code_config.json</code>:</p>
+                        <pre class="code-block"><code>{
   "mcpServers": {
     "wormhole": {
-      "command": "node",
-      "args": ["/path/to/wormhole/dist/server.js"]
+      "command": "npx",
+      "args": ["-y", "wormhole-mcp"]
     }
   }
-}</code></pre></div></div>
-                <div class="install-step"><div class="step-number">3</div><div class="step-content"><h3>Ready!</h3><p>Restart Claude Desktop and start using Wormhole.</p></div></div>
+}</code></pre>
+                        <p style="margin-top: 16px;"><strong>GitHub Copilot</strong> — Add to
+                            <code>.vscode/mcp.json</code> in your project:</p>
+                        <pre class="code-block"><code>{
+  "servers": {
+    "wormhole": {
+      "command": "npx",
+      "args": ["-y", "wormhole-mcp"]
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+                <div class="install-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Ready!</h3>
+                        <p>Restart your agent and start sharing context across tools. That's it! 🎉</p>
+                    </div>
+                </div>
+            </div>
+            <div class="install-alt">
+                <h4>Alternative: Global Install</h4>
+                <pre class="code-block"><code>npm install -g wormhole-mcp</code></pre>
+                <p>Then use <code>"command": "wormhole-mcp"</code> in your config.</p>
             </div>
         </div>
     </section>
 
     <section id="tools" class="section tools">
         <div class="container">
-            <div class="section-header"><span class="section-tag">API Reference</span><h2>MCP Tools</h2></div>
+            <div class="section-header"><span class="section-tag">API Reference</span>
+                <h2>MCP Tools</h2>
+            </div>
             <div class="tools-grid">
-                <div class="tool-card"><h3>📝 log</h3><p>Universal logging for any action type.</p><pre class="code-block"><code>log({
+                <div class="tool-card">
+                    <h3>📝 log</h3>
+                    <p>Universal logging for any action type.</p>
+                    <pre class="code-block"><code>log({
   action: "cmd_run",
   agent_id: "claude-code",
   project_path: "/path/to/project",
   content: { command: "npm test", exit_code: 0 }
-})</code></pre><div class="action-types"><span>cmd_run</span><span>file_edit</span><span>decision</span><span>test_result</span><span>feedback</span></div></div>
-                <div class="tool-card"><h3>📋 get_recent</h3><p>Get recent activity with compact output.</p><pre class="code-block"><code>get_recent({ project_path: "/path/to/project" })</code></pre><div class="output-preview">[5m] claude: npm test → ✓
-[8m] cursor: edit auth.ts "Add JWT"</div></div>
-                <div class="tool-card"><h3>⚠️ check_conflicts</h3><p>Detect concurrent file edits.</p><pre class="code-block"><code>check_conflicts({ project_path: "/path/to/project" })</code></pre></div>
-                <div class="tool-card"><h3>🧹 cleanup</h3><p>Clean up events with scopes.</p><pre class="code-block"><code>cleanup({ scope: "project", project_path: "/path/to/project" })</code></pre></div>
+})</code></pre>
+                    <div class="action-types">
+                        <span>cmd_run</span><span>file_edit</span><span>decision</span><span>test_result</span><span>feedback</span><span>todos</span><span>plan_output</span>
+                    </div>
+                </div>
+                <div class="tool-card">
+                    <h3>📋 get_recent</h3>
+                    <p>Get recent activity with compact output.</p>
+                    <pre class="code-block"><code>get_recent({ project_path: "/path/to/project" })</code></pre>
+                    <div class="output-preview">[5m] claude: npm test → ✓
+                        [8m] cursor: edit auth.ts "Add JWT"</div>
+                </div>
+                <div class="tool-card">
+                    <h3>⚠️ check_conflicts</h3>
+                    <p>Detect concurrent file edits.</p>
+                    <pre class="code-block"><code>check_conflicts({ project_path: "/path/to/project" })</code></pre>
+                </div>
+                <div class="tool-card">
+                    <h3>🧹 cleanup</h3>
+                    <p>Clean up events with scopes.</p>
+                    <pre
+                        class="code-block"><code>cleanup({ scope: "project", project_path: "/path/to/project" })</code></pre>
+                </div>
             </div>
         </div>
     </section>
 
     <section id="sessions" class="section sessions">
         <div class="container">
-            <div class="section-header"><span class="section-tag">Workflow</span><h2>Session Management</h2></div>
+            <div class="section-header"><span class="section-tag">Workflow</span>
+                <h2>Session Management</h2>
+            </div>
             <div class="sessions-grid">
-                <div class="session-card"><h3>▶️ start_session</h3><pre class="code-block"><code>start_session({
+                <div class="session-card">
+                    <h3>▶️ start_session</h3>
+                    <pre class="code-block"><code>start_session({
   project_path: "/path/to/project",
   agent_id: "claude-code",
   name: "bugfix-auth"
-})</code></pre></div>
-                <div class="session-card"><h3>📋 list_sessions</h3><pre class="code-block"><code>list_sessions({ project_path: "/path/to/project" })</code></pre><div class="output-preview">● bugfix-auth (2h) by claude
-○ feature-payment (1d) by cursor</div></div>
-                <div class="session-card"><h3>⏹️ end_session</h3><pre class="code-block"><code>end_session({
+})</code></pre>
+                </div>
+                <div class="session-card">
+                    <h3>📋 list_sessions</h3>
+                    <pre class="code-block"><code>list_sessions({ project_path: "/path/to/project" })</code></pre>
+                    <div class="output-preview">● bugfix-auth (2h) by claude
+                        ○ feature-payment (1d) by cursor</div>
+                </div>
+                <div class="session-card">
+                    <h3>⏹️ end_session</h3>
+                    <pre class="code-block"><code>end_session({
   session_id: "abc-123",
   summary: "Fixed timeout issue"
-})</code></pre></div>
+})</code></pre>
+                </div>
             </div>
-            <div class="session-tip">💡 Sessions isolate context—use <code>switch_session</code> to resume previous work.</div>
+            <div class="session-tip">💡 Sessions isolate context—use <code>switch_session</code> to resume previous
+                work.</div>
         </div>
     </section>
 
     <section id="config" class="section config">
         <div class="container">
-            <div class="section-header"><span class="section-tag">Customization</span><h2>Configuration</h2></div>
+            <div class="section-header"><span class="section-tag">Customization</span>
+                <h2>Configuration</h2>
+            </div>
             <p>Config: <code>~/.wormhole/config.json</code></p>
             <pre class="code-block large"><code>{
   "retention_hours": 24,
@@ -152,10 +253,12 @@ npm run build</code></pre></div></div>
         <div class="container">
             <div class="footer-brand">🌀 Wormhole</div>
             <p>The Inter-Agent Context Bridge</p>
-            <div class="footer-links"><a href="https://github.com/fatmali/wormhole">GitHub</a> • <a href="https://github.com/fatmali/wormhole/blob/main/LICENSE">MIT License</a></div>
+            <div class="footer-links"><a href="https://github.com/fatmali/wormhole">GitHub</a> • <a
+                    href="https://github.com/fatmali/wormhole/blob/main/LICENSE">MIT License</a></div>
             <p class="footer-love">Built with 💜 for AI-assisted development</p>
         </div>
     </footer>
     <script src="scripts.js"></script>
 </body>
+
 </html>

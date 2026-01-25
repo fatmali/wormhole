@@ -11,27 +11,62 @@ A local-first MCP server that enables different AI coding agents (Claude Code, G
 - **Token Optimized** - Compact output, delta queries, relevance filtering
 - **Conflict Detection** - Know when agents touch the same files
 
-## Installation
+## Quick Start
+
+Try instantly with npx (no installation required):
 
 ```bash
-cd wormhole
-npm install
-npm run build
+npx wormhole-mcp
 ```
 
-## Claude Desktop Configuration
+## Installation
 
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+### Option 1: npx (Recommended)
+
+**Claude Code** — Add to `~/.claude/claude_code_config.json`:
 
 ```json
 {
   "mcpServers": {
     "wormhole": {
-      "command": "node",
-      "args": ["/path/to/wormhole/dist/server.js"]
+      "command": "npx",
+      "args": ["-y", "wormhole-mcp"]
     }
   }
 }
+```
+
+**GitHub Copilot** — Add to `.vscode/mcp.json` in your project:
+
+```json
+{
+  "servers": {
+    "wormhole": {
+      "command": "npx",
+      "args": ["-y", "wormhole-mcp"]
+    }
+  }
+}
+```
+
+### Option 2: Global Install
+
+```bash
+npm install -g wormhole-mcp
+```
+
+Then use `"command": "wormhole-mcp"` in your config.
+
+### Option 3: From Source
+
+```bash
+git clone https://github.com/fatmali/wormhole.git
+cd wormhole
+npm install
+npm run build
+```
+
+Use `"command": "node"` with `"args": ["/path/to/wormhole/dist/server.js"]`.
 ```
 
 ## MCP Tools
@@ -80,6 +115,33 @@ log({
   project_path: "/path/to/project",
   content: { agent_suggestion: "Use async/await", user_response: "rejected", user_note: "Legacy code" }
 })
+
+// Log todos
+log({
+  action: "todos",
+  agent_id: "claude-code",
+  project_path: "/path/to/project",
+  content: {
+    items: [
+      { task: "Add input validation", status: "pending", priority: "high" },
+      { task: "Write unit tests", status: "done" },
+      { task: "Update README", status: "pending" }
+    ],
+    context: "Auth refactor"
+  }
+})
+
+// Log plan output
+log({
+  action: "plan_output",
+  agent_id: "claude-code",
+  project_path: "/path/to/project",
+  content: {
+    title: "API Authentication Design",
+    type: "architecture",
+    content: "Use JWT with refresh tokens, store in httpOnly cookies..."
+  }
+})
 ```
 
 **Action Types:**
@@ -88,6 +150,8 @@ log({
 - `decision` - Design decisions with rationale
 - `test_result` - Test outcomes
 - `feedback` - User acceptance/rejection
+- `todos` - Task items with status tracking
+- `plan_output` - Planning artifacts (design, architecture, tasks)
 - Any custom type you need
 
 ### `get_recent`
