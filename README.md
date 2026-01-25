@@ -8,6 +8,8 @@ Keep your AI coding agents in sync. Wormhole gives Claude Code, GitHub Copilot, 
 - 🔀 **Multiple subagents** within the same tool (e.g., parallel Claude tasks)
 - 🔄 **Different AI tools** entirely (Claude ↔ Copilot ↔ Cursor)
 
+⚠️ *Disclaimer*: Wormhole is an early-stage project. APIs and behavior may change, and there may be rough edges. It’s built in the open and evolving fast based on real developer feedback.
+
 ## Features
 
 - **Universal Logging** - Single `log` tool for any action type
