@@ -534,23 +534,6 @@ body {
     background: rgba(168, 85, 247, 0.1);
 }
 
-.agent-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 48px;
-}
-
-.agent-logo img {
-    height: 100%;
-    width: auto;
-    object-fit: contain;
-}
-
-.agent-logo img.logo-copilot {
-    height: 28px;
-}
-
 .agent-emoji {
     font-size: 1.5rem;
 }
@@ -719,14 +702,12 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 16px 24px;
-    background: rgba(255, 255, 255, 0.08);
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: var(--radius-md);
     font-family: var(--font-mono);
     font-size: 0.8rem;
     overflow: hidden;
-    width: 100%;
-    max-width: 400px;
 }
 
 .feed-item {
@@ -734,7 +715,7 @@ body {
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
     border-radius: 6px;
     opacity: 0;
     transform: translateX(-20px);
@@ -769,21 +750,7 @@ body {
 }
 
 .feed-agent {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 16px;
-    margin-right: 8px;
-}
-
-.feed-agent img {
-    height: 100%;
-    width: auto;
-    object-fit: contain;
-}
-
-.feed-agent.feed-copilot {
-    height: 14px;
+    font-size: 1rem;
 }
 
 .feed-item code {

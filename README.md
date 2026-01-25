@@ -4,6 +4,10 @@
 
 Keep your AI coding agents in sync. Wormhole gives Claude Code, GitHub Copilot, and Cursor a shared memory layer—so when you switch tools mid-task, nothing gets lost.
 
+**Works across:**
+- 🔀 **Multiple subagents** within the same tool (e.g., parallel Claude tasks)
+- 🔄 **Different AI tools** entirely (Claude ↔ Copilot ↔ Cursor)
+
 ## Features
 
 - **Universal Logging** - Single `log` tool for any action type

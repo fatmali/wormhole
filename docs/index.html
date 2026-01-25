@@ -49,32 +49,62 @@
             </div>
         </div>
         <div class="hero-visual">
-            <div class="flow-diagram">
-                <div class="flow-problem">
-                    <span class="flow-label">Without Wormhole</span>
-                    <div class="isolated-agents">
-                        <div class="iso-agent">🤖 Claude<div class="iso-bubble">?</div>
+            <div class="agent-animation-container">
+                <span class="flow-label animation-label">Agents → Shared Memory</span>
+                <div class="agent-sync-animation">
+                    <!-- Agents on the left -->
+                    <div class="sync-agents">
+                        <div class="sync-agent" data-agent="claude">
+                            <span class="agent-logo">
+                                <img src="assets/Claude_AI_logo.svg" alt="Claude" class="logo-claude">
+                            </span>
+                            <div class="data-packet packet-1"></div>
                         </div>
-                        <div class="iso-agent">⚡ Copilot<div class="iso-bubble">?</div>
+                        <div class="sync-agent" data-agent="copilot">
+                            <span class="agent-logo">
+                                <img src="assets/GitHub_Copilot_logo.svg" alt="GitHub Copilot" class="logo-copilot">
+                            </span>
+                            <div class="data-packet packet-2"></div>
                         </div>
-                        <div class="iso-agent">📝 Cursor<div class="iso-bubble">?</div>
+                        <div class="sync-agent" data-agent="cursor">
+                            <span class="agent-logo">
+                                <img src="assets/cursor.svg" alt="Cursor" class="logo-cursor">
+                            </span>
+                            <div class="data-packet packet-3"></div>
                         </div>
                     </div>
-                    <p class="flow-caption">Agents can't see each other's work</p>
+                    
+                    <!-- Connection lines -->
+                    <div class="sync-pathways">
+                        <svg class="pathway-svg" viewBox="0 0 200 200" preserveAspectRatio="none">
+                            <path class="pathway path-1" d="M0,30 Q100,30 200,100"></path>
+                            <path class="pathway path-2" d="M0,100 L200,100"></path>
+                            <path class="pathway path-3" d="M0,170 Q100,170 200,100"></path>
+                        </svg>
+                    </div>
+                    
+                    <!-- Wormhole hub -->
+                    <div class="sync-hub">
+                        <div class="wormhole-core">
+                            <span>🌀</span>
+                            <div class="hub-ring ring-1"></div>
+                            <div class="hub-ring ring-2"></div>
+                            <div class="hub-ring ring-3"></div>
+                        </div>
+                        <div class="hub-label">Wormhole</div>
+                    </div>
                 </div>
-                <div class="flow-arrow">→</div>
-                <div class="flow-solution">
-                    <span class="flow-label">With Wormhole</span>
-                    <div class="connected-diagram">
-                        <div class="connected-agents">
-                            <div class="conn-agent">🤖</div>
-                            <div class="conn-agent">⚡</div>
-                            <div class="conn-agent">📝</div>
-                        </div>
-                        <div class="conn-lines"></div>
-                        <div class="wormhole-hub">🌀</div>
-                    </div>
-                    <p class="flow-caption">Shared context & history</p>
+                
+                <!-- Live activity feed -->
+                <div class="activity-feed">
+                    <div class="feed-item feed-1"><span class="feed-agent feed-claude"><img src="assets/Claude_AI_logo.svg" alt="Claude"></span> <code>log({ action: "file_edit" })</code></div>
+                    <div class="feed-item feed-2"><span class="feed-agent feed-copilot"><img src="assets/GitHub_Copilot_logo.svg" alt="Copilot"></span> <code>get_recent()</code></div>
+                    <div class="feed-item feed-3"><span class="feed-agent feed-cursor"><img src="assets/cursor.svg" alt="Cursor"></span> <code>log({ action: "decision" })</code></div>
+                </div>
+                
+                <!-- Framing text -->
+                <div class="agent-framing">
+                    <p>Works with <strong>multiple subagents</strong> within the same tool <em>or</em> <strong>different AI tools</strong> entirely</p>
                 </div>
             </div>
         </div>
@@ -102,6 +132,8 @@
                     <h3>Token Optimized</h3>
                     <p>~400 tokens vs ~5,000 without optimization.</p>
                 </div>
+            </div>
+            <div class="features-grid features-grid-bottom">
                 <div class="feature-card">
                     <div class="feature-icon">⚠️</div>
                     <h3>Conflict Detection</h3>
