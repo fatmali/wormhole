@@ -7,9 +7,11 @@ Keep your AI coding agents in sync. Wormhole gives Claude Code, GitHub Copilot, 
 ## Features
 
 - **Universal Logging** - Single `log` tool for any action type
+- **Event Tagging** - Categorize events with tags for better organization
 - **Session Management** - Named work sessions with isolation
 - **Token Optimized** - Compact output, delta queries, relevance filtering
 - **Conflict Detection** - Know when agents touch the same files
+- **Stale Event Rejection** - Automatically filters out file edits that no longer exist in the current project state
 
 ## Quick Start
 
@@ -102,7 +104,8 @@ log({
   action: "cmd_run",
   agent_id: "claude-code",
   project_path: "/path/to/project",
-  content: { command: "npm test", exit_code: 0 }
+  content: { command: "npm test", exit_code: 0 },
+  tags: ["testing", "ci"]  // Optional: categorize events
 })
 
 // Log a file edit
@@ -110,7 +113,8 @@ log({
   action: "file_edit",
   agent_id: "claude-code",
   project_path: "/path/to/project",
-  content: { file_path: "src/auth.ts", description: "Added JWT validation" }
+  content: { file_path: "src/auth.ts", description: "Added JWT validation" },
+  tags: ["bugfix", "auth"]
 })
 
 // Log a decision
@@ -198,6 +202,24 @@ cursor: evt_123
 - `since_cursor` - Only new events (delta query)
 - `related_to` - Filter by file paths
 - `action_types` - Filter by action types
+- `tags` - Filter by tags (e.g., `["bugfix", "feature"]`)
+
+### `get_tags`
+
+Get all unique tags used in a project with counts:
+
+```javascript
+get_tags({ project_path: "/path/to/project" })
+// Output: 
+// tags:
+// bugfix (12)
+// feature (8)
+// testing (5)
+// auth (3)
+```
+
+**Options:**
+- `with_counts` - Include event counts per tag (default: true)
 
 ### `check_conflicts`
 
@@ -206,6 +228,77 @@ Detect concurrent file edits:
 ```javascript
 check_conflicts({ project_path: "/path/to/project" })
 ```
+
+---
+
+## Stale Event Rejection
+
+Wormhole automatically tracks and validates file edits to ensure agents never act on stale information. When a `file_edit` event is logged with a `diff`, Wormhole:
+
+1. **Extracts the full patch** - Stores all added/removed lines from the diff
+2. **Validates on query** - When events are retrieved via `get_recent` or conflict detection, each file edit is checked against the current file state
+3. **Fuzzy matching** - Uses intelligent matching to handle code that moved positions, only rejecting truly stale edits
+4. **Auto-filters** - Rejected events are automatically excluded from results
+
+### How it works
+
+When you log a file edit:
+```javascript
+log({
+  action: "file_edit",
+  agent_id: "claude-code",
+  project_path: "/path/to/project",
+  content: {
+    file_path: "src/auth.ts",
+    description: "Added JWT validation",
+    diff: `--- a/src/auth.ts
++++ b/src/auth.ts
+@@ -10,6 +10,7 @@
+ function validateToken(token: string) {
++  const decoded = jwt.verify(token, SECRET);
+   return decoded;
+ }`
+  }
+})
+```
+
+Wormhole stores the full diff in the payload. Later, when another agent queries recent events:
+- **File still has the change** → Event is included
+- **Code was removed or changed** → Event is silently filtered out
+- **Code moved to different location** → Still recognized (fuzzy match)
+
+**Note:** The `diff` field is NOT truncated (unlike other content fields), ensuring accurate validation even for large changes.
+
+This ensures agents always work with accurate context about what's currently in the codebase.
+
+### Validation Algorithm
+
+The patch validation uses intelligent fuzzy matching:
+
+**For Added Lines (`+`):**
+- Checks if the added code exists anywhere in the current file
+- Uses normalized comparison (trimmed whitespace)
+- Accepts partial matches (code that contains or is contained by the search)
+- Requires 60% of added lines to match for validation
+
+**For Removed Lines (`-`):**
+- If a "removed" line still exists in the file → patch is stale
+- This catches cases where a deletion was reverted
+
+**Edge Cases Handled:**
+- **File deleted**: Patch fails validation
+- **Code refactored**: Fuzzy matching still finds the logic if it exists
+- **Whitespace changes**: Normalized comparison ignores formatting
+- **Line movements**: Searches entire file, not just original position
+- **No patch stored**: Event is kept (backward compatibility)
+- **Already rejected**: Event is skipped on subsequent queries
+
+### Performance
+
+- Validation runs only when events are queried (lazy evaluation)
+- File I/O is cached by OS for repeated reads
+- Minimal overhead: ~1-5ms per file_edit event
+- Database stores full diffs efficiently as TEXT columns
 
 ### `cleanup`
 
@@ -290,6 +383,8 @@ Config file: `~/.wormhole/config.json`
   "default_limit": 5
 }
 ```
+
+**Note:** The `max_payload_chars` setting truncates most content fields for display, but `diff` fields in `file_edit` events are always stored in full to enable accurate stale-event validation.
 
 ## Token Optimization
 

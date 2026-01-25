@@ -6,6 +6,7 @@ export const LogSchema = z.object({
     project_path: z.string().describe('Project path'),
     content: z.record(z.any()).describe('Action-specific content (command, file_path, decision, etc.)'),
     isolate: z.boolean().optional().describe('Start fresh context'),
+    tags: z.array(z.string()).optional().describe('Tags for categorizing events (e.g., ["bugfix", "auth"])'),
 });
 
 export const GetRecentSchema = z.object({
@@ -15,6 +16,7 @@ export const GetRecentSchema = z.object({
     since_cursor: z.string().optional().describe('Cursor for delta queries'),
     related_to: z.array(z.string()).optional().describe('Filter by related files'),
     action_types: z.array(z.string()).optional().describe('Filter by action types'),
+    tags: z.array(z.string()).optional().describe('Filter by tags (e.g., ["bugfix", "feature"])'),
 });
 
 export const CheckConflictsSchema = z.object({
@@ -52,4 +54,8 @@ export const ListSessionsSchema = z.object({
 
 export const SwitchSessionSchema = z.object({
     session_id: z.string().describe('Session to switch to'),
+});
+export const GetTagsSchema = z.object({
+    project_path: z.string().describe('Project path'),
+    with_counts: z.boolean().optional().describe('Include event counts per tag (default: true)'),
 });

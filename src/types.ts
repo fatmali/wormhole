@@ -9,6 +9,8 @@ export interface TimelineEvent {
     project_path: string;
     isolated: boolean;
     session_id: string | null;
+    tags: string | null;
+    rejected: boolean;
 }
 
 export interface Session {

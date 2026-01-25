@@ -1,5 +1,7 @@
 // Utility functions for Wormhole
 import { TimelineEvent } from './types.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Format relative time (e.g., "5m", "2h", "1d")
@@ -46,7 +48,8 @@ export function formatEventCompact(event: TimelineEvent): string {
             case 'file_edit': {
                 const file = payload.file_path || 'unknown';
                 const desc = payload.description ? ` "${truncatePayload(payload.description, 30)}"` : '';
-                return `[${time}] ${agent}: edit ${file}${desc}`;
+                const hasDiff = payload.diff ? ' [+diff]' : '';
+                return `[${time}] ${agent}: edit ${file}${desc}${hasDiff}`;
             }
             case 'decision': {
                 const decision = truncatePayload(payload.decision || '', 50);
@@ -101,6 +104,10 @@ export function formatEventNormal(event: TimelineEvent): string {
                 lines.push(`  ${payload.file_path || 'unknown'}`);
                 if (payload.description) {
                     lines.push(`  ${payload.description}`);
+                }
+                if (payload.diff) {
+                    lines.push(`  diff:`);
+                    lines.push(payload.diff.split('\n').map((l: string) => `    ${l}`).join('\n'));
                 }
                 break;
             case 'decision':
@@ -193,4 +200,149 @@ export function isEventRelevant(event: TimelineEvent, relatedTo: string[]): bool
 
     const eventPaths = extractFilePaths(event);
     return eventPaths.some(p => relatedTo.some(r => p.includes(r) || r.includes(p)));
+}
+
+/**
+ * Minimum percentage of patch lines that must match for validation to pass.
+ * 60% allows for minor formatting changes or line movements while still
+ * confirming the patch is substantially present. Lower values would accept
+ * mostly-reverted changes; higher values would reject valid patches with
+ * minor edits.
+ */
+const PATCH_VALIDATION_THRESHOLD = 0.6;
+
+/**
+ * Extract patch from diff content
+ * Returns the full patch for accurate validation
+ */
+export function extractPatch(diff: string | undefined): string | null {
+    if (!diff) return null;
+
+    const lines = diff.split('\n');
+    const patchLines: string[] = [];
+
+    for (const line of lines) {
+        // Include added, removed, and context lines (skip file headers)
+        if (line.startsWith('+') && !line.startsWith('+++')) {
+            patchLines.push(line);
+        } else if (line.startsWith('-') && !line.startsWith('---')) {
+            patchLines.push(line);
+        } else if (line.startsWith(' ')) {
+            patchLines.push(line);
+        }
+    }
+
+    return patchLines.length > 0 ? patchLines.join('\n') : null;
+}
+
+/**
+ * Validate if a patch still exists in the current file
+ * Uses fuzzy matching to handle line movements and minor changes
+ */
+export function validatePatch(
+    filePath: string,
+    patch: string | null,
+    projectPath: string
+): boolean {
+    // No patch to validate
+    if (!patch) return true;
+
+    // Construct absolute file path
+    const absolutePath = path.isAbsolute(filePath) 
+        ? filePath 
+        : path.join(projectPath, filePath);
+
+    // Check if file exists
+    if (!fs.existsSync(absolutePath)) {
+        return false;
+    }
+
+    try {
+        const currentContent = fs.readFileSync(absolutePath, 'utf-8');
+        const currentLines = currentContent.split('\n');
+        const patchLines = patch.split('\n');
+
+        // Extract the meaningful content from patch (ignore +/- markers)
+        const patchContent: string[] = [];
+        for (const line of patchLines) {
+            if (line.startsWith('+') && !line.startsWith('+++')) {
+                // Added line
+                patchContent.push(line.substring(1).trim());
+            } else if (line.startsWith('-') && !line.startsWith('---')) {
+                // Removed line - we check if it's MISSING from current file
+                const removed = line.substring(1).trim();
+                if (removed.length > 0 && currentContent.includes(removed)) {
+                    // If "removed" line still exists, patch is stale
+                    return false;
+                }
+            }
+        }
+
+        // If no added lines to check, patch is valid (deletion-only or context-only)
+        if (patchContent.length === 0) return true;
+
+        // Create a Set of normalized current lines for O(1) lookup
+        const normalizedLines = new Set(currentLines.map(line => line.trim()));
+
+        // Check if added lines exist in the file (fuzzy match)
+        let matchCount = 0;
+        for (const patchLine of patchContent) {
+            if (patchLine.length === 0) continue;
+            
+            // Exact match
+            if (normalizedLines.has(patchLine)) {
+                matchCount++;
+                continue;
+            }
+
+            // Fuzzy match: check if any line contains or is contained by patch line
+            for (const normalized of normalizedLines) {
+                if (normalized.includes(patchLine) || patchLine.includes(normalized)) {
+                    matchCount++;
+                    break;
+                }
+            }
+        }
+
+        // If enough patch lines are found, consider it valid
+        const threshold = Math.ceil(patchContent.length * PATCH_VALIDATION_THRESHOLD);
+        return matchCount >= threshold;
+    } catch (err) {
+        // If we can't read the file, consider patch invalid
+        return false;
+    }
+}
+
+/**
+ * Filter out rejected (stale) file_edit events
+ */
+export function filterStaleFileEdits(
+    events: TimelineEvent[],
+    projectPath: string
+): TimelineEvent[] {
+    return events.filter(event => {
+        // Only validate file_edit events
+        if (event.action !== 'file_edit') return true;
+        
+        // Skip already rejected events
+        if (event.rejected) return false;
+
+        // Validate the patch
+        try {
+            const payload = JSON.parse(event.payload);
+            const filePath = payload.file_path;
+            const diff = payload.diff;
+            
+            if (!filePath) return true;
+            
+            // If no diff stored, keep the event (backward compatibility)
+            if (!diff) return true;
+
+            const patch = extractPatch(diff);
+            return validatePatch(filePath, patch, projectPath);
+        } catch {
+            // If payload can't be parsed, keep the event
+            return true;
+        }
+    });
 }

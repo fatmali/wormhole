@@ -11,7 +11,7 @@ let db: Database.Database | null = null;
 // In-memory active sessions per project
 const activeSessions = new Map<string, string>();
 
-const SCHEMA = `
+const BASE_SCHEMA = `
 CREATE TABLE IF NOT EXISTS timeline (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   agent_id TEXT NOT NULL,
@@ -42,14 +42,43 @@ CREATE INDEX IF NOT EXISTS idx_project_timestamp ON timeline(project_path, times
 CREATE INDEX IF NOT EXISTS idx_sessions_project ON sessions(project_path, active);
 `;
 
+const INDEXES_AFTER_MIGRATION = `
+CREATE INDEX IF NOT EXISTS idx_tags ON timeline(tags);
+`;
+
 export function initDatabase(): Database.Database {
     if (db) return db;
 
     const dbPath = path.join(getWormholeDir(), 'timeline.db');
     db = new Database(dbPath);
-    db.exec(SCHEMA);
+    
+    // Create base tables first
+    db.exec(BASE_SCHEMA);
+
+    // Run migrations to add new columns
+    migrateDatabase(db);
+
+    // Create indexes that depend on migrated columns
+    db.exec(INDEXES_AFTER_MIGRATION);
 
     return db;
+}
+
+function migrateDatabase(database: Database.Database): void {
+    const columns = database.pragma('table_info(timeline)') as Array<{ name: string }>;
+    const columnNames = columns.map(col => col.name);
+    
+    // Add tags column if missing
+    if (!columnNames.includes('tags')) {
+        console.error('[wormhole] Migrating database: Adding tags column');
+        database.exec('ALTER TABLE timeline ADD COLUMN tags TEXT');
+    }
+    
+    // Add rejected column if missing
+    if (!columnNames.includes('rejected')) {
+        console.error('[wormhole] Migrating database: Adding rejected column');
+        database.exec('ALTER TABLE timeline ADD COLUMN rejected INTEGER DEFAULT 0');
+    }
 }
 
 export function getDatabase(): Database.Database {
@@ -67,17 +96,21 @@ export function addEvent(
     payload: string,
     project_path: string,
     isolated: boolean = false,
-    session_id: string | null = null
+    session_id: string | null = null,
+    tags: string[] = []
 ): number {
     const db = getDatabase();
     const timestamp = Date.now();
 
+    // Store tags as JSON array (handles tags with commas)
+    const tagsStr = tags.length > 0 ? JSON.stringify(tags) : null;
+
     const stmt = db.prepare(`
-    INSERT INTO timeline (agent_id, action, payload, timestamp, project_path, isolated, session_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO timeline (agent_id, action, payload, timestamp, project_path, isolated, session_id, tags, rejected)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
   `);
 
-    const result = stmt.run(agent_id, action, payload, timestamp, project_path, isolated ? 1 : 0, session_id);
+    const result = stmt.run(agent_id, action, payload, timestamp, project_path, isolated ? 1 : 0, session_id, tagsStr);
     return result.lastInsertRowid as number;
 }
 
@@ -85,7 +118,8 @@ export function getRecentEvents(
     project_path: string,
     limit: number = 5,
     since_cursor: string | null = null,
-    action_types: string[] | null = null
+    action_types: string[] | null = null,
+    tags: string[] | null = null
 ): QueryResult {
     const db = getDatabase();
 
@@ -109,6 +143,18 @@ export function getRecentEvents(
         const placeholders = action_types.map(() => '?').join(', ');
         query += ` AND action IN (${placeholders})`;
         params.push(...action_types);
+    }
+
+    // Handle tag filtering - check if any of the specified tags are present
+    if (tags && tags.length > 0) {
+        const tagConditions = tags
+            .map(() => `(',' || tags || ',') LIKE '%,' || ? || ',%'`)
+            .join(' OR ');
+        query += ` AND (${tagConditions})`;
+        // Match whole tags in a comma-separated list
+        for (const tag of tags) {
+            params.push(tag);
+        }
     }
 
     // Find the most recent isolation boundary
@@ -366,6 +412,47 @@ export function getActiveSession(project_path: string): Session | null {
     const sessionId = activeSessions.get(project_path);
     if (!sessionId) return null;
     return getSession(sessionId);
+}
+
+// === Tags ===
+
+export function getAllTags(project_path: string, with_counts: boolean = true): Map<string, number> | string[] {
+    const db = getDatabase();
+
+    const stmt = db.prepare(`
+    SELECT tags FROM timeline 
+    WHERE project_path = ? AND tags IS NOT NULL
+  `);
+
+    const rows = stmt.all(project_path) as { tags: string }[];
+
+    const tagMap = new Map<string, number>();
+
+    for (const row of rows) {
+        try {
+            const tags = JSON.parse(row.tags) as string[];
+            for (const tag of tags) {
+                if (tag) {
+                    tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+                }
+            }
+        } catch {
+            // Skip invalid JSON (backward compatibility with comma-separated format)
+            const tags = row.tags.split(',');
+            for (const tag of tags) {
+                const trimmed = tag.trim();
+                if (trimmed) {
+                    tagMap.set(trimmed, (tagMap.get(trimmed) || 0) + 1);
+                }
+            }
+        }
+    }
+
+    if (with_counts) {
+        return tagMap;
+    }
+
+    return Array.from(tagMap.keys()).sort();
 }
 
 // === Utils ===

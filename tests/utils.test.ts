@@ -2,6 +2,9 @@
  * Tests for utility functions
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 import {
     formatRelativeTime,
     truncatePayload,
@@ -10,8 +13,12 @@ import {
     formatEvents,
     extractFilePaths,
     isEventRelevant,
+    extractPatch,
+    validatePatch,
+    filterStaleFileEdits,
 } from '../src/utils.js';
 import { createTestEvent } from './setup.js';
+import { TimelineEvent } from '../src/types.js';
 
 describe('formatRelativeTime', () => {
     beforeEach(() => {
@@ -104,6 +111,23 @@ describe('formatEventCompact', () => {
         expect(result).toContain('src/index.ts');
     });
 
+    it('should format file_edit events with diff indicator', () => {
+        const event = createTestEvent({
+            action: 'file_edit',
+            payload: JSON.stringify({
+                file_path: 'src/auth.ts',
+                description: 'Added JWT validation',
+                diff: '+ import jwt from "jsonwebtoken";\n+ export function validateToken(token: string) {\n+   return jwt.verify(token, SECRET);\n+ }'
+            }),
+            timestamp: Date.now() - 5 * 60000,
+        });
+
+        const result = formatEventCompact(event);
+        expect(result).toContain('edit');
+        expect(result).toContain('src/auth.ts');
+        expect(result).toContain('[+diff]');
+    });
+
     it('should format decision events', () => {
         const event = createTestEvent({
             action: 'decision',
@@ -163,6 +187,44 @@ describe('formatEventNormal', () => {
         const result = formatEventNormal(event);
         expect(result).toContain('unit');
         expect(result).toContain('passed');
+    });
+
+    it('should format file_edit events with diff', () => {
+        const event = createTestEvent({
+            action: 'file_edit',
+            payload: JSON.stringify({
+                file_path: 'src/auth.ts',
+                description: 'Added JWT validation',
+                diff: '+ import jwt from "jsonwebtoken";\n+ export function validateToken(token: string) {\n+   return jwt.verify(token, SECRET);\n+ }'
+            }),
+            timestamp: Date.now() - 3 * 60000,
+        });
+
+        const result = formatEventNormal(event);
+        expect(result).toContain('3m');
+        expect(result).toContain('file_edit');
+        expect(result).toContain('src/auth.ts');
+        expect(result).toContain('Added JWT validation');
+        expect(result).toContain('diff:');
+        expect(result).toContain('+ import jwt');
+        expect(result).toContain('validateToken');
+    });
+
+    it('should format file_edit events without diff', () => {
+        const event = createTestEvent({
+            action: 'file_edit',
+            payload: JSON.stringify({
+                file_path: 'src/index.ts',
+                description: 'Refactored imports'
+            }),
+            timestamp: Date.now() - 1 * 60000,
+        });
+
+        const result = formatEventNormal(event);
+        expect(result).toContain('file_edit');
+        expect(result).toContain('src/index.ts');
+        expect(result).toContain('Refactored imports');
+        expect(result).not.toContain('diff:');
     });
 });
 
@@ -248,5 +310,335 @@ describe('isEventRelevant', () => {
         });
 
         expect(isEventRelevant(event, ['utils.ts'])).toBe(false);
+    });
+});
+
+describe('Patch Validation', () => {
+    let tempDir: string;
+    let testFilePath: string;
+
+    beforeEach(() => {
+        // Create a temporary directory for test files
+        tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wormhole-test-'));
+        testFilePath = path.join(tempDir, 'test.ts');
+    });
+
+    afterEach(() => {
+        // Clean up temporary directory
+        if (fs.existsSync(tempDir)) {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+    });
+
+    describe('extractPatch', () => {
+        it('should extract patch from diff with added lines', () => {
+            const diff = `--- a/test.ts
++++ b/test.ts
+@@ -1,3 +1,4 @@
+ function test() {
++  console.log('hello');
+   return true;
+ }`;
+
+            const patch = extractPatch(diff);
+            expect(patch).toContain('+  console.log(\'hello\');');
+        });
+
+        it('should extract patch from diff with removed lines', () => {
+            const diff = `--- a/test.ts
++++ b/test.ts
+@@ -1,4 +1,3 @@
+ function test() {
+-  console.log('hello');
+   return true;
+ }`;
+
+            const patch = extractPatch(diff);
+            expect(patch).toContain('-  console.log(\'hello\');');
+        });
+
+        it('should extract all patch lines without limit', () => {
+            const diff = Array(20).fill(0).map((_, i) => `+ line ${i}`).join('\n');
+            const patch = extractPatch(diff);
+            const lines = patch?.split('\n') || [];
+            expect(lines.length).toBe(20);
+        });
+
+        it('should return null for empty diff', () => {
+            expect(extractPatch('')).toBeNull();
+            expect(extractPatch(undefined)).toBeNull();
+        });
+    });
+
+    describe('validatePatch', () => {
+        it('should validate patch when added lines exist in file', () => {
+            // Create test file with content
+            const content = `function test() {
+  console.log('hello');
+  return true;
+}`;
+            fs.writeFileSync(testFilePath, content);
+
+            // Patch that added the console.log line
+            const patch = ` function test() {
++  console.log('hello');
+   return true;
+ }`;
+
+            const isValid = validatePatch('test.ts', patch, tempDir);
+            expect(isValid).toBe(true);
+        });
+
+        it('should reject patch when removed lines still exist', () => {
+            // Create test file that still has the "removed" line
+            const content = `function test() {
+  console.log('hello');
+  return true;
+}`;
+            fs.writeFileSync(testFilePath, content);
+
+            // Patch that supposedly removed the console.log line
+            const patch = ` function test() {
+-  console.log('hello');
+   return true;
+ }`;
+
+            const isValid = validatePatch('test.ts', patch, tempDir);
+            expect(isValid).toBe(false);
+        });
+
+        it('should reject patch when added lines are missing', () => {
+            // Create test file without the added line
+            const content = `function test() {
+  return true;
+}`;
+            fs.writeFileSync(testFilePath, content);
+
+            // Patch that added the console.log line
+            const patch = ` function test() {
++  console.log('hello');
+   return true;
+ }`;
+
+            const isValid = validatePatch('test.ts', patch, tempDir);
+            expect(isValid).toBe(false);
+        });
+
+        it('should handle fuzzy matching for moved lines', () => {
+            // Create test file where the added line moved position
+            const content = `function test() {
+  return true;
+}
+
+function another() {
+  console.log('hello');
+}`;
+            fs.writeFileSync(testFilePath, content);
+
+            // Patch that added console.log in original position
+            const patch = ` function test() {
++  console.log('hello');
+   return true;
+ }`;
+
+            // Should still be valid because the line exists somewhere
+            const isValid = validatePatch('test.ts', patch, tempDir);
+            expect(isValid).toBe(true);
+        });
+
+        it('should return false when file does not exist', () => {
+            const patch = `+ console.log('hello');`;
+            const isValid = validatePatch('nonexistent.ts', patch, tempDir);
+            expect(isValid).toBe(false);
+        });
+
+        it('should return true when patch is null', () => {
+            const isValid = validatePatch('test.ts', null, tempDir);
+            expect(isValid).toBe(true);
+        });
+
+        it('should handle absolute file paths', () => {
+            const content = `function test() {
+  console.log('hello');
+  return true;
+}`;
+            fs.writeFileSync(testFilePath, content);
+
+            const patch = `+  console.log('hello');`;
+            const isValid = validatePatch(testFilePath, patch, tempDir);
+            expect(isValid).toBe(true);
+        });
+    });
+
+    describe('filterStaleFileEdits', () => {
+        beforeEach(() => {
+            // Create a test file
+            const content = `function test() {
+  console.log('current');
+  return true;
+}`;
+            fs.writeFileSync(testFilePath, content);
+        });
+
+        it('should keep non-file_edit events', () => {
+            const events: TimelineEvent[] = [
+                {
+                    id: 1,
+                    agent_id: 'test-agent',
+                    action: 'cmd_run',
+                    payload: JSON.stringify({ command: 'npm test' }),
+                    timestamp: Date.now(),
+                    project_path: tempDir,
+                    isolated: false,
+                    session_id: null,
+                    tags: null,
+                    rejected: false,
+                },
+            ];
+
+            const filtered = filterStaleFileEdits(events, tempDir);
+            expect(filtered).toHaveLength(1);
+        });
+
+        it('should keep file_edit events with valid patches', () => {
+            const events: TimelineEvent[] = [
+                {
+                    id: 1,
+                    agent_id: 'test-agent',
+                    action: 'file_edit',
+                    payload: JSON.stringify({ 
+                        file_path: 'test.ts',
+                        diff: `+  console.log('current');`
+                    }),
+                    timestamp: Date.now(),
+                    project_path: tempDir,
+                    isolated: false,
+                    session_id: null,
+                    tags: null,
+                    rejected: false,
+                },
+            ];
+
+            const filtered = filterStaleFileEdits(events, tempDir);
+            expect(filtered).toHaveLength(1);
+        });
+
+        it('should filter out file_edit events with invalid patches', () => {
+            const events: TimelineEvent[] = [
+                {
+                    id: 1,
+                    agent_id: 'test-agent',
+                    action: 'file_edit',
+                    payload: JSON.stringify({ 
+                        file_path: 'test.ts',
+                        diff: `+  console.log('old-content-that-does-not-exist');`
+                    }),
+                    timestamp: Date.now(),
+                    project_path: tempDir,
+                    isolated: false,
+                    session_id: null,
+                    tags: null,
+                    rejected: false,
+                },
+            ];
+
+            const filtered = filterStaleFileEdits(events, tempDir);
+            expect(filtered).toHaveLength(0);
+        });
+
+        it('should keep file_edit events without patches for backward compatibility', () => {
+            const events: TimelineEvent[] = [
+                {
+                    id: 1,
+                    agent_id: 'test-agent',
+                    action: 'file_edit',
+                    payload: JSON.stringify({ file_path: 'test.ts' }),
+                    timestamp: Date.now(),
+                    project_path: tempDir,
+                    isolated: false,
+                    session_id: null,
+                    tags: null,
+                    rejected: false,
+                },
+            ];
+
+            const filtered = filterStaleFileEdits(events, tempDir);
+            expect(filtered).toHaveLength(1);
+        });
+
+        it('should filter out already rejected events', () => {
+            const events: TimelineEvent[] = [
+                {
+                    id: 1,
+                    agent_id: 'test-agent',
+                    action: 'file_edit',
+                    payload: JSON.stringify({ 
+                        file_path: 'test.ts',
+                        diff: `+  console.log('current');`
+                    }),
+                    timestamp: Date.now(),
+                    project_path: tempDir,
+                    isolated: false,
+                    session_id: null,
+                    tags: null,
+                    rejected: true,
+                },
+            ];
+
+            const filtered = filterStaleFileEdits(events, tempDir);
+            expect(filtered).toHaveLength(0);
+        });
+
+        it('should handle mixed events correctly', () => {
+            const events: TimelineEvent[] = [
+                {
+                    id: 1,
+                    agent_id: 'test-agent',
+                    action: 'cmd_run',
+                    payload: JSON.stringify({ command: 'npm test' }),
+                    timestamp: Date.now(),
+                    project_path: tempDir,
+                    isolated: false,
+                    session_id: null,
+                    tags: null,
+                    rejected: false,
+                },
+                {
+                    id: 2,
+                    agent_id: 'test-agent',
+                    action: 'file_edit',
+                    payload: JSON.stringify({ 
+                        file_path: 'test.ts',
+                        diff: `+  console.log('current');`
+                    }),
+                    timestamp: Date.now(),
+                    project_path: tempDir,
+                    isolated: false,
+                    session_id: null,
+                    tags: null,
+                    rejected: false,
+                },
+                {
+                    id: 3,
+                    agent_id: 'test-agent',
+                    action: 'file_edit',
+                    payload: JSON.stringify({ 
+                        file_path: 'test.ts',
+                        diff: `+  console.log('stale-content');`
+                    }),
+                    timestamp: Date.now(),
+                    project_path: tempDir,
+                    isolated: false,
+                    session_id: null,
+                    tags: null,
+                    rejected: false,
+                },
+            ];
+
+            const filtered = filterStaleFileEdits(events, tempDir);
+            expect(filtered).toHaveLength(2); // cmd_run + valid file_edit
+            expect(filtered[0].action).toBe('cmd_run');
+            expect(filtered[1].action).toBe('file_edit');
+        });
     });
 });

@@ -9,7 +9,7 @@ import {
 
 import { loadConfig, ensureWormholeDir } from './config.js';
 import { initDatabase, cleanupOldEvents } from './db.js';
-import { LogSchema, GetRecentSchema, CheckConflictsSchema, CleanupSchema, StartSessionSchema, EndSessionSchema, ListSessionsSchema, SwitchSessionSchema } from './schemas.js';
+import { LogSchema, GetRecentSchema, CheckConflictsSchema, CleanupSchema, StartSessionSchema, EndSessionSchema, ListSessionsSchema, SwitchSessionSchema, GetTagsSchema } from './schemas.js';
 import { TOOL_DEFINITIONS } from './tools.js';
 import {
     handleLog,
@@ -19,7 +19,8 @@ import {
     handleStartSession,
     handleEndSession,
     handleListSessions,
-    handleSwitchSession
+    handleSwitchSession,
+    handleGetTags
 } from './handlers.js';
 
 async function main() {
@@ -40,7 +41,7 @@ async function main() {
     const server = new Server(
         {
             name: 'wormhole',
-            version: '2.0.0',
+            version: '2.1.0',
         },
         {
             capabilities: {
@@ -100,6 +101,11 @@ async function main() {
                 case 'switch_session': {
                     const parsed = SwitchSessionSchema.parse(args);
                     result = handleSwitchSession(parsed);
+                    break;
+                }
+                case 'get_tags': {
+                    const parsed = GetTagsSchema.parse(args);
+                    result = handleGetTags(parsed);
                     break;
                 }
                 default:

@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS timeline (
     timestamp INTEGER NOT NULL,
     project_path TEXT NOT NULL,
     isolated INTEGER DEFAULT 0,
-    session_id TEXT
+    session_id TEXT,
+    tags TEXT,
+    rejected INTEGER DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY,
@@ -36,6 +38,7 @@ CREATE INDEX IF NOT EXISTS idx_timestamp ON timeline(timestamp);
 CREATE INDEX IF NOT EXISTS idx_session ON timeline(session_id);
 CREATE INDEX IF NOT EXISTS idx_project_timestamp ON timeline(project_path, timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_sessions_project ON sessions(project_path, active);
+CREATE INDEX IF NOT EXISTS idx_tags ON timeline(tags);
 `;
 
 /**

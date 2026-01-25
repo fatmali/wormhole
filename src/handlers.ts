@@ -12,9 +12,10 @@ import {
     setActiveSession,
     getActiveSession,
     createSession,
+    getAllTags,
 } from './db.js';
-import { Config } from './types.js';
-import { formatEvents, formatRelativeTime, isEventRelevant, truncatePayload } from './utils.js';
+import { Config, TimelineEvent } from './types.js';
+import { formatEvents, formatRelativeTime, isEventRelevant, truncatePayload, extractPatch, filterStaleFileEdits } from './utils.js';
 import {
     LogSchema,
     GetRecentSchema,
@@ -24,16 +25,20 @@ import {
     EndSessionSchema,
     ListSessionsSchema,
     SwitchSessionSchema,
+    GetTagsSchema,
 } from './schemas.js';
 
 export function handleLog(args: z.infer<typeof LogSchema>, config: Config): string {
     // Get active session for this project
     const activeSession = getActiveSession(args.project_path);
 
-    // Truncate content values based on config
+    // Truncate content values based on config. Do NOT truncate "diff" fields:
+    // stale-event validation relies on comparing the full, original diff content
+    // (see filterStaleFileEdits and related logic), so truncating it here would
+    // prevent reliable detection of whether a file_edit event has gone stale.
     const truncatedContent: Record<string, any> = {};
     for (const [key, value] of Object.entries(args.content)) {
-        if (typeof value === 'string') {
+        if (typeof value === 'string' && key !== 'diff') {
             truncatedContent[key] = truncatePayload(value, config.max_payload_chars);
         } else {
             truncatedContent[key] = value;
@@ -48,7 +53,8 @@ export function handleLog(args: z.infer<typeof LogSchema>, config: Config): stri
         payload,
         args.project_path,
         args.isolate ?? false,
-        activeSession?.id ?? null
+        activeSession?.id ?? null,
+        args.tags ?? []
     );
 
     // Format compact confirmation based on action type
@@ -109,7 +115,8 @@ export function handleGetRecent(args: z.infer<typeof GetRecentSchema>, config: C
         args.project_path,
         limit,
         args.since_cursor ?? null,
-        args.action_types ?? null
+        args.action_types ?? null,
+        args.tags ?? null
     );
 
     // Apply relevance filtering if specified
@@ -117,6 +124,9 @@ export function handleGetRecent(args: z.infer<typeof GetRecentSchema>, config: C
     if (args.related_to && args.related_to.length > 0) {
         events = events.filter(e => isEventRelevant(e, args.related_to!));
     }
+
+    // Filter out stale file_edit events
+    events = filterStaleFileEdits(events, args.project_path);
 
     return formatEvents(events, detail, result.cursor);
 }
@@ -133,8 +143,22 @@ export function handleCheckConflicts(args: z.infer<typeof CheckConflictsSchema>)
         return 'no conflicts';
     }
 
-    const lines: string[] = [];
+    // Filter out stale file edits from conflicts
+    const validConflicts = new Map<string, TimelineEvent[]>();
     for (const [file, events] of conflicts) {
+        const validEvents = filterStaleFileEdits(events, args.project_path);
+        // Only include files with multiple valid edits
+        if (validEvents.length > 1) {
+            validConflicts.set(file, validEvents);
+        }
+    }
+
+    if (validConflicts.size === 0) {
+        return 'no conflicts';
+    }
+
+    const lines: string[] = [];
+    for (const [file, events] of validConflicts) {
         const agents = events.map(e => {
             const time = formatRelativeTime(e.timestamp);
             const agent = e.agent_id.split('-')[0];
@@ -242,4 +266,29 @@ export function handleSwitchSession(args: z.infer<typeof SwitchSessionSchema>): 
 
     const name = session.name || args.session_id.slice(0, 8);
     return `switched to: ${name}`;
+}
+
+export function handleGetTags(args: z.infer<typeof GetTagsSchema>): string {
+    const withCounts = args.with_counts ?? true;
+    const result = getAllTags(args.project_path, withCounts);
+
+    if (withCounts) {
+        const tagMap = result as Map<string, number>;
+        if (tagMap.size === 0) {
+            return 'no tags found';
+        }
+
+        // Sort by count descending
+        const sorted = Array.from(tagMap.entries())
+            .sort((a, b) => b[1] - a[1]);
+
+        const lines = sorted.map(([tag, count]) => `${tag} (${count})`);
+        return `tags:\n${lines.join('\n')}`;
+    } else {
+        const tags = result as string[];
+        if (tags.length === 0) {
+            return 'no tags found';
+        }
+        return `tags: ${tags.join(', ')}`;
+    }
 }

@@ -4,12 +4,15 @@ export const TOOL_DEFINITIONS = [
         description: `Log any agent action. Action types:
 - cmd_run: {command, output?, exit_code?}
 - file_edit: {file_path, description?, diff?}
+  * diff must be a unified diff format (with +/- lines, not a text description)
+  * Example: "--- a/file.ts\\n+++ b/file.ts\\n@@ -1,3 +1,4 @@\\n function() {\\n+  newLine();\\n   return;\\n }"
+  * Used for automatic stale-event validation - ensures agents don't act on outdated changes
 - decision: {decision, rationale?, alternatives?}
 - test_result: {test_suite, status, summary?}
 - feedback: {agent_suggestion, user_response, user_note?}
 - todos: {items: [{task, status?, priority?}], context?}
 - plan_output: {title, content, type?: 'design'|'architecture'|'tasks'}
-Or use any custom action type.`,
+Or use any custom action type. Optional: add tags array to categorize events.`,
         inputSchema: {
             type: 'object',
             properties: {
@@ -18,6 +21,7 @@ Or use any custom action type.`,
                 project_path: { type: 'string', description: 'Project path' },
                 content: { type: 'object', description: 'Action-specific content' },
                 isolate: { type: 'boolean', description: 'Start fresh context' },
+                tags: { type: 'array', items: { type: 'string' }, description: 'Tags for categorizing events (e.g., ["bugfix", "auth"])' },
             },
             required: ['action', 'agent_id', 'project_path', 'content'],
         },
@@ -34,6 +38,7 @@ Or use any custom action type.`,
                 since_cursor: { type: 'string', description: 'Cursor for delta queries' },
                 related_to: { type: 'array', items: { type: 'string' }, description: 'Filter by files' },
                 action_types: { type: 'array', items: { type: 'string' }, description: 'Filter by action types' },
+                tags: { type: 'array', items: { type: 'string' }, description: 'Filter by tags (e.g., ["bugfix", "feature"])' },
             },
             required: ['project_path'],
         },
@@ -117,4 +122,15 @@ Or use any custom action type.`,
             required: ['session_id'],
         },
     },
-];
+    {
+        name: 'get_tags',
+        description: 'Get all unique tags used in events for a project, with optional counts.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                project_path: { type: 'string', description: 'Project path' },
+                with_counts: { type: 'boolean', description: 'Include event counts per tag (default: true)' },
+            },
+            required: ['project_path'],
+        },
+    },];
