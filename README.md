@@ -1,8 +1,8 @@
 # Wormhole 🌀
 
-**The Inter-Agent Context Bridge**
+**Collaborative AI Workflow Manager**
 
-A local-first MCP server that enables different AI coding agents (Claude Code, GitHub Copilot CLI, Cursor) to share a unified "short-term memory."
+Keep your AI coding agents in sync. Wormhole gives Claude Code, GitHub Copilot, and Cursor a shared memory layer—so when you switch tools mid-task, nothing gets lost.
 
 ## Features
 
@@ -67,6 +67,27 @@ npm run build
 ```
 
 Use `"command": "node"` with `"args": ["/path/to/wormhole/dist/server.js"]`.
+```
+
+### Claude Code Plugin
+
+For Claude Code users, there's an optional plugin that bundles the MCP server config with a skill:
+
+```bash
+# Install the plugin
+claude /install-plugin ./node_modules/wormhole-mcp/plugins/wormhole
+```
+
+Or test locally:
+```bash
+claude --plugin-dir ./node_modules/wormhole-mcp/plugins/wormhole
+```
+
+Then invoke with `/wormhole:wormhole` in Claude Code.
+
+**Standalone skill** (simpler):
+```bash
+cp -r node_modules/wormhole-mcp/skills/wormhole .claude/skills/
 ```
 
 ## MCP Tools

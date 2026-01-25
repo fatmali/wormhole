@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Wormhole - The Inter-Agent Context Bridge. A local-first MCP server that enables AI agents to share unified short-term memory.">
-    <title>Wormhole 🌀 | Inter-Agent Context Bridge</title>
+        content="Wormhole - Collaborative AI Workflow Manager. Keep Claude Code, GitHub Copilot, and Cursor in sync with shared memory.">
+    <title>Wormhole 🌀 | Collaborative AI Workflow Manager</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌀</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -28,6 +30,7 @@
                 <a href="#installation">Install</a>
                 <a href="#tools">Tools</a>
                 <a href="#sessions">Sessions</a>
+                <a href="#skills">Skills</a>
                 <a href="https://github.com/fatmali/wormhole" target="_blank" class="nav-github">GitHub</a>
             </div>
         </div>
@@ -37,9 +40,9 @@
         <div class="hero-content">
             <div class="hero-badge"><span class="badge-dot"></span>MCP Server</div>
             <h1 class="hero-title"><span class="title-gradient">Wormhole</span> 🌀</h1>
-            <p class="hero-subtitle">The Inter-Agent Context Bridge</p>
-            <p class="hero-description">A local-first MCP server enabling <span class="highlight">Claude Code, Copilot,
-                    Cursor</span> to share unified short-term memory.</p>
+            <p class="hero-subtitle">Collaborative AI Workflow Manager</p>
+            <p class="hero-description">Keep your AI coding agents in sync. When you switch tools mid-task, <span
+                    class="highlight">nothing gets lost</span>.</p>
             <div class="hero-actions">
                 <a href="#installation" class="btn btn-primary">Get Started →</a>
                 <a href="https://github.com/fatmali/wormhole" class="btn btn-secondary">View on GitHub</a>
@@ -128,7 +131,8 @@
   }
 }</code></pre>
                         <p style="margin-top: 16px;"><strong>GitHub Copilot</strong> — Add to
-                            <code>.vscode/mcp.json</code> in your project:</p>
+                            <code>.vscode/mcp.json</code> in your project:
+                        </p>
                         <pre class="code-block"><code>{
   "servers": {
     "wormhole": {
@@ -229,6 +233,52 @@
         </div>
     </section>
 
+    <section id="skills" class="section skills">
+        <div class="container">
+            <div class="section-header"><span class="section-tag">Integrations</span>
+                <h2>Skills & Extensions</h2>
+            </div>
+            <p style="text-align: center; margin-bottom: 32px; color: var(--text-secondary);">
+                Make your AI agents smarter with Wormhole-aware skills and configurations.
+            </p>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <h3>🤖 Claude Code Plugin</h3>
+                    <p>Full plugin with MCP config and skill bundled.</p>
+                    <pre class="code-block"><code>claude /install-plugin \
+  ./node_modules/wormhole-mcp/plugins/wormhole</code></pre>
+                    <p style="margin-top: 12px; font-size: 0.9rem;">Or use standalone skill:</p>
+                    <pre class="code-block"><code>cp -r node_modules/wormhole-mcp/skills/wormhole \
+  .claude/skills/</code></pre>
+                </div>
+                <div class="tool-card">
+                    <h3>⚡ GitHub Copilot</h3>
+                    <p>Add MCP support in VS Code. Copy to <code>.vscode/mcp.json</code>:</p>
+                    <pre class="code-block"><code>{
+  "servers": {
+    "wormhole": {
+      "command": "npx",
+      "args": ["-y", "wormhole-mcp"]
+    }
+  }
+}</code></pre>
+                </div>
+                <div class="tool-card">
+                    <h3>📝 Cursor</h3>
+                    <p>Same MCP config works for Cursor! Add to your MCP settings.</p>
+                    <pre class="code-block"><code>{
+  "mcpServers": {
+    "wormhole": {
+      "command": "npx",
+      "args": ["-y", "wormhole-mcp"]
+    }
+  }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="config" class="section config">
         <div class="container">
             <div class="section-header"><span class="section-tag">Customization</span>
@@ -252,7 +302,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-brand">🌀 Wormhole</div>
-            <p>The Inter-Agent Context Bridge</p>
+            <p>Collaborative AI Workflow Manager</p>
             <div class="footer-links"><a href="https://github.com/fatmali/wormhole">GitHub</a> • <a
                     href="https://github.com/fatmali/wormhole/blob/main/LICENSE">MIT License</a></div>
             <p class="footer-love">Built with 💜 for AI-assisted development</p>

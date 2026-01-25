@@ -1,0 +1,10 @@
+{
+    "name": "wormhole",
+    "description": "Collaborative AI memory layer - sync work between Claude Code, GitHub Copilot, and Cursor",
+    "version": "2.0.0",
+    "author": {
+        "name": "Fatma Ali"
+    },
+    "repository": "https://github.com/fatmali/wormhole",
+    "license": "MIT"
+}

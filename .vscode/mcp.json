@@ -1,0 +1,11 @@
+{
+    "servers": {
+        "wormhole": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "wormhole-mcp"
+            ]
+        }
+    }
+}
