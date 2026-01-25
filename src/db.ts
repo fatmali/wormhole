@@ -314,6 +314,10 @@ export function createSession(
   `);
 
     stmt.run(id, name || null, project_path, description || null, started_at, started_by);
+    
+    // Set newly created session as active
+    setActiveSession(project_path, id);
+    
     return id;
 }
 
