@@ -18,6 +18,7 @@ Keep your AI coding agents in sync. Wormhole gives Claude Code, GitHub Copilot, 
 - **Token Optimized** - Compact output, delta queries, relevance filtering
 - **Conflict Detection** - Know when agents touch the same files
 - **Stale Event Rejection** - Automatically filters out file edits that no longer exist in the current project state
+- **Web UI Visualization** - View sessions, timeline events, and insights with `npx wormhole ui`
 
 ## Quick Start
 
@@ -26,6 +27,24 @@ Try instantly with npx (no installation required):
 ```bash
 npx wormhole-mcp
 ```
+
+## Web UI
+
+Visualize your agent activity with the built-in web interface:
+
+```bash
+# Start the UI server (default port: 3000)
+npx wormhole ui
+
+# Or specify a custom port
+npx wormhole ui 8080
+```
+
+Then open http://localhost:3000 in your browser to see:
+- 📊 **Dashboard** - Stats on events, sessions, and agents
+- ⏱️ **Timeline** - Visual event stream with filtering
+- 📋 **Sessions** - All work sessions with details
+- 📈 **Insights** - Action types and tag analytics
 
 ## Installation
 

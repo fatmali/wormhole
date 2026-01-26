@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wormhole</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Command Palette -->
+    <div id="command-palette" class="command-palette hidden">
+        <input type="text" id="command-input" placeholder="Search commands..." autocomplete="off">
+        <div id="command-results" class="command-results"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <span class="logo-emoji">🌀</span>
+            <span class="logo-text">Wormhole</span>
+        </div>
+        
+        <nav class="nav">
+            <button class="nav-item active" data-view="dashboard">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="7" height="9"/>
+                    <rect x="14" y="3" width="7" height="5"/>
+                    <rect x="14" y="12" width="7" height="9"/>
+                    <rect x="3" y="16" width="7" height="5"/>
+                </svg>
+                <span class="nav-label">Overview</span>
+            </button>
+            <button class="nav-item" data-view="timeline">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                <span class="nav-label">Activity</span>
+            </button>
+            <button class="nav-item" data-view="sessions">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                </svg>
+                <span class="nav-label">Sessions</span>
+            </button>
+            <button class="nav-item" data-view="analytics">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <span class="nav-label">Insights</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="cmd-palette-btn" class="sidebar-btn" title="Search · ⌘K">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </button>
+            <button id="refresh-btn" class="sidebar-btn" title="Refresh · R">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header Bar -->
+        <header class="header-bar">
+            <div class="header-left">
+                <select id="project-filter" class="filter-select">
+                    <option value="">All projects</option>
+                </select>
+                <select id="session-filter" class="filter-select">
+                    <option value="">All sessions</option>
+                </select>
+            </div>
+            <div class="header-right">
+                <span class="status-indicator">
+                    <span class="status-dot"></span>
+                    Live
+                </span>
+            </div>
+        </header>
+
+        <!-- Dashboard View -->
+        <section id="dashboard-view" class="view active">
+            <div class="page-header">
+                <h1>Overview</h1>
+            </div>
+
+            <div class="metrics-row">
+                <div class="metric">
+                    <div class="metric-value" id="stat-events">—</div>
+                    <div class="metric-label">Events</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="stat-sessions">—</div>
+                    <div class="metric-label">Sessions</div>
+                </div>
+                <div class="metric active">
+                    <div class="metric-value" id="stat-active">—</div>
+                    <div class="metric-label">Active</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="stat-agents">—</div>
+                    <div class="metric-label">Agents</div>
+                    <div id="agent-badges" class="agent-list"></div>
+                </div>
+            </div>
+
+            <div class="grid-layout">
+                <div class="card card-wide">
+                    <div class="card-header">
+                        <h2>Recent activity</h2>
+                        <span class="badge" id="activity-count">0</span>
+                    </div>
+                    <div id="recent-activity" class="list"></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Actions</h2>
+                    </div>
+                    <div id="top-actions" class="chart"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Files</h2>
+                    </div>
+                    <div id="active-files" class="list"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline View -->
+        <section id="timeline-view" class="view">
+            <div class="page-header">
+                <h1>Activity</h1>
+                <div class="header-actions">
+                    <input type="text" id="timeline-search" class="input" placeholder="Filter...">
+                    <button class="btn" onclick="exportData()">Export</button>
+                </div>
+            </div>
+            <div id="timeline" class="event-feed"></div>
+        </section>
+
+        <!-- Sessions View -->
+        <section id="sessions-view" class="view">
+            <div class="page-header">
+                <h1>Sessions</h1>
+            </div>
+            <div id="sessions-list" class="session-grid"></div>
+        </section>
+
+        <!-- Analytics View -->
+        <section id="analytics-view" class="view">
+            <div class="page-header">
+                <h1>Insights</h1>
+            </div>
+            <div class="grid-layout">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Action breakdown</h2>
+                    </div>
+                    <div id="action-types" class="chart"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Tags</h2>
+                    </div>
+                    <div id="tags-chart" class="tag-grid"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/app.js"></script>
+</body>
+</html>

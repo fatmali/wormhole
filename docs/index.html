@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Wormhole - Collaborative AI Workflow Manager. Keep Claude Code, GitHub Copilot, and Cursor in sync with shared memory.">
-    <title>Wormhole 🌀 | Collaborative AI Workflow Manager</title>
+        content="Wormhole - Local-first shared memory for AI coding agents. Keep Claude, Copilot, and Cursor in sync. 100% private, runs on your machine.">
+    <title>Wormhole | Local Shared Memory for AI Agents</title>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌀</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,82 +30,39 @@
                 <a href="#installation">Install</a>
                 <a href="#tools">Tools</a>
                 <a href="#sessions">Sessions</a>
-                <a href="#skills">Skills</a>
+                <a href="#ui">Dashboard</a>
+                <a href="#skills">Integrations</a>
                 <a href="https://github.com/fatmali/wormhole" target="_blank" class="nav-github">GitHub</a>
             </div>
         </div>
     </nav>
 
-    <header class="hero">
+    <header class="hero hero-dev">
         <div class="hero-content">
-            <div class="hero-badge"><span class="badge-dot"></span>MCP Server</div>
-            <h1 class="hero-title"><span class="title-gradient">Wormhole</span> 🌀</h1>
-            <p class="hero-subtitle">Collaborative AI Workflow Manager</p>
-            <p class="hero-description">Keep your AI coding agents in sync. When you switch tools mid-task, <span
-                    class="highlight">nothing gets lost</span>.</p>
-            <div class="hero-actions">
-                <a href="#installation" class="btn btn-primary">Get Started →</a>
-                <a href="https://github.com/fatmali/wormhole" class="btn btn-secondary">View on GitHub</a>
+            <div class="hero-badge"><span class="badge-dot"></span>MCP Server · Local-first</div>
+            <h1 class="hero-title-dev">🌀 <span class="title-gradient">wormhole-mcp</span></h1>
+            <p class="hero-tagline">Track and sync AI agent activity across your codebase</p>
+            <p class="hero-description">Logs file edits, decisions, and commands so agents stay in sync, avoid conflicts, and pick up where others left off.</p>
+            <div class="hero-terminal">
+                <div class="terminal-header">
+                    <span class="terminal-dot red"></span>
+                    <span class="terminal-dot yellow"></span>
+                    <span class="terminal-dot green"></span>
+                    <span class="terminal-title">~/.claude.json</span>
+                </div>
+                <pre class="terminal-code"><code>{
+  "mcpServers": {
+    "wormhole": {
+      "command": "npx",
+      "args": ["-y", "wormhole-mcp"]
+    }
+  }
+}</code></pre>
             </div>
-        </div>
-        <div class="hero-visual">
-            <div class="agent-animation-container">
-                <span class="flow-label animation-label">Agents → Shared Memory</span>
-                <div class="agent-sync-animation">
-                    <!-- Agents on the left -->
-                    <div class="sync-agents">
-                        <div class="sync-agent" data-agent="claude">
-                            <span class="agent-logo">
-                                <img src="assets/Claude_AI_logo.svg" alt="Claude" class="logo-claude">
-                            </span>
-                            <div class="data-packet packet-1"></div>
-                        </div>
-                        <div class="sync-agent" data-agent="copilot">
-                            <span class="agent-logo">
-                                <img src="assets/GitHub_Copilot_logo.svg" alt="GitHub Copilot" class="logo-copilot">
-                            </span>
-                            <div class="data-packet packet-2"></div>
-                        </div>
-                        <div class="sync-agent" data-agent="cursor">
-                            <span class="agent-logo">
-                                <img src="assets/cursor.svg" alt="Cursor" class="logo-cursor">
-                            </span>
-                            <div class="data-packet packet-3"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Connection lines -->
-                    <div class="sync-pathways">
-                        <svg class="pathway-svg" viewBox="0 0 200 200" preserveAspectRatio="none">
-                            <path class="pathway path-1" d="M0,30 Q100,30 200,100"></path>
-                            <path class="pathway path-2" d="M0,100 L200,100"></path>
-                            <path class="pathway path-3" d="M0,170 Q100,170 200,100"></path>
-                        </svg>
-                    </div>
-                    
-                    <!-- Wormhole hub -->
-                    <div class="sync-hub">
-                        <div class="wormhole-core">
-                            <span>🌀</span>
-                            <div class="hub-ring ring-1"></div>
-                            <div class="hub-ring ring-2"></div>
-                            <div class="hub-ring ring-3"></div>
-                        </div>
-                        <div class="hub-label">Wormhole</div>
-                    </div>
-                </div>
-                
-                <!-- Live activity feed -->
-                <div class="activity-feed">
-                    <div class="feed-item feed-1"><span class="feed-agent feed-claude"><img src="assets/Claude_AI_logo.svg" alt="Claude"></span> <code>log({ action: "file_edit" })</code></div>
-                    <div class="feed-item feed-2"><span class="feed-agent feed-copilot"><img src="assets/GitHub_Copilot_logo.svg" alt="Copilot"></span> <code>get_recent()</code></div>
-                    <div class="feed-item feed-3"><span class="feed-agent feed-cursor"><img src="assets/cursor.svg" alt="Cursor"></span> <code>log({ action: "decision" })</code></div>
-                </div>
-                
-                <!-- Framing text -->
-                <div class="agent-framing">
-                    <p>Works with <strong>multiple subagents</strong> within the same tool <em>or</em> <strong>different AI tools</strong> entirely</p>
-                </div>
+            <p class="hero-privacy"><span class="highlight">100% local. Your data never leaves your machine.</span></p>
+            <div class="hero-actions">
+                <a href="#installation" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/fatmali/wormhole" target="_blank" class="btn btn-secondary">View on GitHub</a>
             </div>
         </div>
     </header>
@@ -114,35 +71,40 @@
         <div class="container">
             <div class="section-header">
                 <span class="section-tag">Why Wormhole?</span>
-                <h2>Powerful Features</h2>
+                <h2>Built for Developer Workflows</h2>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">📝</div>
+                    <div class="feature-icon-svg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <h3>100% Private</h3>
+                    <p>All data stored locally in SQLite. Nothing leaves your machine.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-svg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></div>
                     <h3>Universal Logging</h3>
                     <p>Single <code>log</code> tool for any action type.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📦</div>
+                    <div class="feature-icon-svg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
                     <h3>Session Management</h3>
-                    <p>Named work sessions with isolation.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Token Optimized</h3>
-                    <p>~400 tokens vs ~5,000 without optimization.</p>
+                    <p>Named work sessions with context isolation.</p>
                 </div>
             </div>
             <div class="features-grid features-grid-bottom">
                 <div class="feature-card">
-                    <div class="feature-icon">⚠️</div>
+                    <div class="feature-icon-svg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+                    <h3>Token Optimized</h3>
+                    <p>~400 tokens vs ~5,000 without optimization.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-svg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
                     <h3>Conflict Detection</h3>
                     <p>Know when agents touch the same files.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
+                    <div class="feature-icon-svg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
                     <h3>Stale Event Rejection</h3>
-                    <p>Auto-validates file edits. Stale changes are filtered out.</p>
+                    <p>Auto-validates edits. Outdated changes filtered.</p>
                 </div>
             </div>
         </div>
@@ -158,7 +120,7 @@
                     <div class="step-number">1</div>
                     <div class="step-content">
                         <h3>Configure Your Agent</h3>
-                        <p><strong>Claude Code</strong> — Add to <code>~/.claude/claude_code_config.json</code>:</p>
+                        <p><strong>Claude Code</strong>: Add to <code>~/.claude.json</code></p>
                         <pre class="code-block"><code>{
   "mcpServers": {
     "wormhole": {
@@ -167,7 +129,7 @@
     }
   }
 }</code></pre>
-                        <p style="margin-top: 16px;"><strong>GitHub Copilot</strong> — Add to
+                        <p style="margin-top: 16px;"><strong>GitHub Copilot</strong>: Add to
                             <code>.vscode/mcp.json</code> in your project:
                         </p>
                         <pre class="code-block"><code>{
@@ -183,8 +145,8 @@
                 <div class="install-step">
                     <div class="step-number">2</div>
                     <div class="step-content">
-                        <h3>Ready!</h3>
-                        <p>Restart your agent and start sharing context across tools. That's it! 🎉</p>
+                        <h3>Ready</h3>
+                        <p>Restart your agent and start sharing context across tools. All data stays on your machine.</p>
                     </div>
                 </div>
             </div>
@@ -203,7 +165,7 @@
             </div>
             <div class="tools-grid">
                 <div class="tool-card">
-                    <h3>📝 log</h3>
+                    <h3>log</h3>
                     <p>Universal logging for any action type.</p>
                     <pre class="code-block"><code>log({
   action: "cmd_run",
@@ -216,19 +178,19 @@
                     </div>
                 </div>
                 <div class="tool-card">
-                    <h3>📋 get_recent</h3>
+                    <h3>get_recent</h3>
                     <p>Get recent activity with compact output.</p>
                     <pre class="code-block"><code>get_recent({ project_path: "/path/to/project" })</code></pre>
                     <div class="output-preview">[5m] claude: npm test → ✓
                         [8m] cursor: edit auth.ts "Add JWT"</div>
                 </div>
                 <div class="tool-card">
-                    <h3>⚠️ check_conflicts</h3>
+                    <h3>check_conflicts</h3>
                     <p>Detect concurrent file edits.</p>
                     <pre class="code-block"><code>check_conflicts({ project_path: "/path/to/project" })</code></pre>
                 </div>
                 <div class="tool-card">
-                    <h3>🧹 cleanup</h3>
+                    <h3>cleanup</h3>
                     <p>Clean up events with scopes.</p>
                     <pre
                         class="code-block"><code>cleanup({ scope: "project", project_path: "/path/to/project" })</code></pre>
@@ -244,7 +206,7 @@
             </div>
             <div class="sessions-grid">
                 <div class="session-card">
-                    <h3>▶️ start_session</h3>
+                    <h3>start_session</h3>
                     <pre class="code-block"><code>start_session({
   project_path: "/path/to/project",
   agent_id: "claude-code",
@@ -252,35 +214,102 @@
 })</code></pre>
                 </div>
                 <div class="session-card">
-                    <h3>📋 list_sessions</h3>
+                    <h3>list_sessions</h3>
                     <pre class="code-block"><code>list_sessions({ project_path: "/path/to/project" })</code></pre>
                     <div class="output-preview">● bugfix-auth (2h) by claude
                         ○ feature-payment (1d) by cursor</div>
                 </div>
                 <div class="session-card">
-                    <h3>⏹️ end_session</h3>
+                    <h3>end_session</h3>
                     <pre class="code-block"><code>end_session({
   session_id: "abc-123",
   summary: "Fixed timeout issue"
 })</code></pre>
                 </div>
             </div>
-            <div class="session-tip">💡 Sessions isolate context—use <code>switch_session</code> to resume previous
+            <div class="session-tip">Sessions isolate context. Use <code>switch_session</code> to resume previous
                 work.</div>
+        </div>
+    </section>
+
+    <section id="ui" class="section ui-section">
+        <div class="container">
+            <div class="section-header"><span class="section-tag">Visualization</span>
+                <h2>Dashboard UI</h2>
+            </div>
+            <p style="text-align: center; margin-bottom: 24px; color: var(--text-secondary);">
+                Monitor agent activity, browse sessions, and analyze workflow patterns.
+            </p>
+            <div class="storage-grid" style="margin-bottom: 24px;">
+                <div class="storage-item"><span class="storage-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span> Reads from: <code>~/.wormhole/timeline.db</code></div>
+            </div>
+            <div class="ui-preview">
+                <div class="ui-window">
+                    <div class="ui-titlebar">
+                        <span class="ui-dot red"></span>
+                        <span class="ui-dot yellow"></span>
+                        <span class="ui-dot green"></span>
+                        <span class="ui-title">Wormhole Dashboard</span>
+                    </div>
+                    <div class="ui-content">
+                        <div class="ui-sidebar">
+                            <div class="ui-nav-item active">Overview</div>
+                            <div class="ui-nav-item">Activity</div>
+                            <div class="ui-nav-item">Sessions</div>
+                            <div class="ui-nav-item">Insights</div>
+                        </div>
+                        <div class="ui-main">
+                            <div class="ui-metrics">
+                                <div class="ui-metric"><span class="ui-metric-value">247</span><span class="ui-metric-label">Events</span></div>
+                                <div class="ui-metric"><span class="ui-metric-value">12</span><span class="ui-metric-label">Sessions</span></div>
+                                <div class="ui-metric"><span class="ui-metric-value">3</span><span class="ui-metric-label">Active</span></div>
+                                <div class="ui-metric"><span class="ui-metric-value">4</span><span class="ui-metric-label">Agents</span></div>
+                            </div>
+                            <div class="ui-activity">
+                                <div class="ui-activity-item"><span class="ui-dot-small blue"></span>File edit: auth.ts</div>
+                                <div class="ui-activity-item"><span class="ui-dot-small green"></span>Command: npm test</div>
+                                <div class="ui-activity-item"><span class="ui-dot-small purple"></span>Decision: Use JWT</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui-launch">
+                <pre class="code-block"><code>npx wormhole ui</code></pre>
+                <p>Opens at <code>http://localhost:3000</code></p>
+            </div>
+            <div class="ui-features">
+                <div class="ui-feature">
+                    <span class="ui-feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+                    <span>Real-time activity feed</span>
+                </div>
+                <div class="ui-feature">
+                    <span class="ui-feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+                    <span>Search & filter events</span>
+                </div>
+                <div class="ui-feature">
+                    <span class="ui-feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+                    <span>Export to JSON</span>
+                </div>
+                <div class="ui-feature">
+                    <span class="ui-feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001M10 8h.001"/></svg></span>
+                    <span>Keyboard shortcuts</span>
+                </div>
+            </div>
         </div>
     </section>
 
     <section id="skills" class="section skills">
         <div class="container">
             <div class="section-header"><span class="section-tag">Integrations</span>
-                <h2>Skills & Extensions</h2>
+                <h2>Agent Setup</h2>
             </div>
             <p style="text-align: center; margin-bottom: 32px; color: var(--text-secondary);">
-                Make your AI agents smarter with Wormhole-aware skills and configurations.
+                Configure your AI agents to use Wormhole's shared memory.
             </p>
             <div class="tools-grid">
                 <div class="tool-card">
-                    <h3>🤖 Claude Code Plugin</h3>
+                    <h3>Claude Code</h3>
                     <p>Full plugin with MCP config and skill bundled.</p>
                     <pre class="code-block"><code>claude /install-plugin \
   ./node_modules/wormhole-mcp/plugins/wormhole</code></pre>
@@ -289,7 +318,7 @@
   .claude/skills/</code></pre>
                 </div>
                 <div class="tool-card">
-                    <h3>⚡ GitHub Copilot</h3>
+                    <h3>GitHub Copilot</h3>
                     <p>Add MCP support in VS Code. Copy to <code>.vscode/mcp.json</code>:</p>
                     <pre class="code-block"><code>{
   "servers": {
@@ -301,8 +330,8 @@
 }</code></pre>
                 </div>
                 <div class="tool-card">
-                    <h3>📝 Cursor</h3>
-                    <p>Same MCP config works for Cursor! Add to your MCP settings.</p>
+                    <h3>Cursor</h3>
+                    <p>Same MCP config works for Cursor. Add to your MCP settings.</p>
                     <pre class="code-block"><code>{
   "mcpServers": {
     "wormhole": {
@@ -318,9 +347,10 @@
 
     <section id="config" class="section config">
         <div class="container">
-            <div class="section-header"><span class="section-tag">Customization</span>
+            <div class="section-header"><span class="section-tag">Local Storage</span>
                 <h2>Configuration</h2>
             </div>
+            <p style="text-align: center; margin-bottom: 24px; color: var(--text-secondary);">All data stored locally on your machine. No accounts, no cloud sync, no telemetry.</p>
             <p>Config: <code>~/.wormhole/config.json</code></p>
             <pre class="code-block large"><code>{
   "retention_hours": 24,
@@ -330,19 +360,19 @@
   "default_limit": 5
 }</code></pre>
             <div class="storage-grid">
-                <div class="storage-item">💾 Database: <code>~/.wormhole/timeline.db</code></div>
-                <div class="storage-item">📦 Archives: <code>~/.wormhole/archives/</code></div>
+                <div class="storage-item"><span class="storage-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span> Database: <code>~/.wormhole/timeline.db</code></div>
+                <div class="storage-item"><span class="storage-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg></span> Archives: <code>~/.wormhole/archives/</code></div>
             </div>
         </div>
     </section>
 
     <footer class="footer">
         <div class="container">
-            <div class="footer-brand">🌀 Wormhole</div>
-            <p>Collaborative AI Workflow Manager</p>
+            <div class="footer-brand">Wormhole</div>
+            <p>Local-first shared memory for AI coding agents</p>
             <div class="footer-links"><a href="https://github.com/fatmali/wormhole">GitHub</a> • <a
-                    href="https://github.com/fatmali/wormhole/blob/main/LICENSE">MIT License</a></div>
-            <p class="footer-love">Built with 💜 for AI-assisted development</p>
+                    href="https://github.com/fatmali/wormhole/blob/main/LICENSE">MIT License</a> • <a href="https://www.npmjs.com/package/wormhole-mcp">npm</a></div>
+            <p class="footer-privacy">Private by design. No data collection. No cloud.</p>
         </div>
     </footer>
     <script src="scripts.js"></script>

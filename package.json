@@ -5,10 +5,12 @@
   "main": "dist/server.js",
   "type": "module",
   "bin": {
-    "wormhole-mcp": "./dist/server.js"
+    "wormhole-mcp": "./dist/server.js",
+    "wormhole": "./dist/cli.js"
   },
   "files": [
     "dist",
+    "ui",
     "skills",
     "plugins",
     "README.md",
