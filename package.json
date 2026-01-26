@@ -1,6 +1,6 @@
 {
   "name": "wormhole-mcp",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "The Inter-Agent Context Bridge - MCP server for shared agent memory",
   "main": "dist/server.js",
   "type": "module",
