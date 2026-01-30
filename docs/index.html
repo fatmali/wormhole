@@ -195,6 +195,25 @@
                     <pre
                         class="code-block"><code>cleanup({ scope: "project", project_path: "/path/to/project" })</code></pre>
                 </div>
+                <div class="tool-card">
+                    <h3>save_knowledge</h3>
+                    <p>Store decisions, pitfalls, conventions, or constraints.</p>
+                    <pre class="code-block"><code>save_knowledge({
+  project_path: ".",
+  knowledge_type: "pitfall",
+  title: "Avoid fs.readFileSync",
+  content: "Blocks event loop; causes timeouts"
+})</code></pre>
+                </div>
+                <div class="tool-card">
+                    <h3>search_project_knowledge</h3>
+                    <p>Intent-aware lookup of saved knowledge.</p>
+                    <pre class="code-block"><code>search_project_knowledge({
+  project_path: ".",
+  intent: "debugging",
+  query: "auth"
+})</code></pre>
+                </div>
             </div>
         </div>
     </section>
@@ -292,58 +311,65 @@
                     <span>Export to JSON</span>
                 </div>
                 <div class="ui-feature">
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-svg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 0 6.5 7H20"/><path d="M4 12h9"/><path d="M12 16v-8"/></svg></div>
+                    <h3>Knowledge Capture</h3>
+                    <p>Save decisions & pitfalls and surface them with intent-aware search.</p>
                     <span class="ui-feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.001M10 8h.001"/></svg></span>
                     <span>Keyboard shortcuts</span>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <section id="skills" class="section skills">
-        <div class="container">
-            <div class="section-header"><span class="section-tag">Integrations</span>
-                <h2>Agent Setup</h2>
-            </div>
-            <p style="text-align: center; margin-bottom: 32px; color: var(--text-secondary);">
-                Configure your AI agents to use Wormhole's shared memory.
-            </p>
-            <div class="tools-grid">
-                <div class="tool-card">
-                    <h3>Claude Code</h3>
-                    <p>Full plugin with MCP config and skill bundled.</p>
-                    <pre class="code-block"><code>claude /install-plugin \
-  ./node_modules/wormhole-mcp/plugins/wormhole</code></pre>
-                    <p style="margin-top: 12px; font-size: 0.9rem;">Or use standalone skill:</p>
-                    <pre class="code-block"><code>cp -r node_modules/wormhole-mcp/skills/wormhole \
-  .claude/skills/</code></pre>
                 </div>
-                <div class="tool-card">
-                    <h3>GitHub Copilot</h3>
-                    <p>Add MCP support in VS Code. Copy to <code>.vscode/mcp.json</code>:</p>
-                    <pre class="code-block"><code>{
-  "servers": {
-    "wormhole": {
-      "command": "npx",
-      "args": ["-y", "wormhole-mcp"]
+        </section>
+
+        <section id="skills" class="section skills">
+                <div class="container">
+                        <div class="section-header">
+                                <span class="section-tag">Integrations</span>
+                                <h2>Agent Setup</h2>
+                        </div>
+                        <p style="text-align: center; margin-bottom: 32px; color: var(--text-secondary);">
+                                Configure your AI agents to use Wormhole's shared memory.
+                        </p>
+                        <div class="tools-grid">
+                                <div class="tool-card">
+                                        <h3>Claude Code</h3>
+                                        <p>Full plugin with MCP config and skill bundled.</p>
+                                        <pre class="code-block"><code>claude /install-plugin \
+    ./node_modules/wormhole-mcp/plugins/wormhole</code></pre>
+                                        <p style="margin-top: 12px; font-size: 0.9rem;">Or use standalone skill:</p>
+                                        <pre class="code-block"><code>cp -r node_modules/wormhole-mcp/skills/wormhole \
+    .claude/skills/</code></pre>
+                                </div>
+                                <div class="tool-card">
+                                        <h3>GitHub Copilot</h3>
+                                        <p>Add MCP support in VS Code. Copy to <code>.vscode/mcp.json</code>:</p>
+                                        <pre class="code-block"><code>{
+    "servers": {
+        "wormhole": {
+            "command": "npx",
+            "args": ["-y", "wormhole-mcp"]
+        }
     }
-  }
 }</code></pre>
-                </div>
-                <div class="tool-card">
-                    <h3>Cursor</h3>
-                    <p>Same MCP config works for Cursor. Add to your MCP settings.</p>
-                    <pre class="code-block"><code>{
-  "mcpServers": {
-    "wormhole": {
-      "command": "npx",
-      "args": ["-y", "wormhole-mcp"]
+                                </div>
+                                <div class="tool-card">
+                                        <h3>Cursor</h3>
+                                        <p>Same MCP config works for Cursor. Add to your MCP settings.</p>
+                                        <pre class="code-block"><code>{
+    "mcpServers": {
+        "wormhole": {
+            "command": "npx",
+            "args": ["-y", "wormhole-mcp"]
+        }
     }
-  }
 }</code></pre>
+                                </div>
+                        </div>
                 </div>
-            </div>
-        </div>
-    </section>
+        </section>
 
     <section id="config" class="section config">
         <div class="container">

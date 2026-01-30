@@ -1,169 +1,90 @@
 ---
-name: wormhole
 description: Sync work between AI agents. Log actions, manage sessions, detect conflicts.
 ---
 
 # Wormhole
 
-Shared memory for AI agents. **CRITICAL: You MUST log all significant actions** so other agents can see your work.
+Shared memory for AI agents. **Log every significant action** so others stay in sync.
 
-## 🚨 MANDATORY WORKFLOW
+## 🚨 Minimal Workflow
 
-**ALWAYS follow this sequence:**
+> Use the **absolute path of the current project directory** for every `project_path` (e.g., `/Users/you/Code/wormhole`). Avoid `.`.
 
-1. **First action**: `start_session` (at beginning of task)
-2. **During work**: `log` after EVERY file edit, command, or decision
-3. **Before editing files**: `check_conflicts` to see if another agent touched them
-4. **When resuming**: `get_recent` to see what others did
-5. **Last action**: `end_session` with summary
+1. `start_session` when you begin.
+2. Pull context: `search_project_knowledge` + `get_recent`.
+3. Before edits: `check_conflicts` on files.
+4. During work: `log` every file_edit, cmd_run, decision, test_result, todos.
+5. Capture learnings: `save_knowledge` (decisions/pitfalls/conventions/constraints).
+6. Finish with `end_session` + summary.
 
-## ⚠️ WHEN TO LOG (Non-Negotiable)
+## ✅ Logging Rules (no exceptions)
 
-You MUST call `log` immediately after:
+- After editing any file (include file_path + diff).
+- After running commands (command + exit_code).
+- After decisions, test results, todos, plan_output, feedback.
 
-| Action | Example | Required? |
-|--------|---------|-----------|
-| Editing any file | Modified `auth.ts` | ✅ REQUIRED |
-| Running commands | `npm test`, `git commit` | ✅ REQUIRED |
-| Making design decisions | "Chose JWT over sessions" | ✅ REQUIRED |
-| Terminal operations | Build, deploy, test | ✅ REQUIRED |
-| Creating/deleting files | New component, removed util | ✅ REQUIRED |
+## Core tools (compact)
 
-**DO NOT skip logging.** Other agents depend on seeing your work.
-
-## Tools
-
-### log (USE THIS CONSTANTLY)
+### start_session
 ```js
-// After editing a file - ALWAYS include this
-log({ 
-  action: "file_edit", 
-  agent_id: "claude-code", 
-  project_path: ".", 
-  content: { 
-    file_path: "src/auth.ts", 
-    description: "Added JWT validation",
-    diff: "--- a/src/auth.ts\n+++ b/src/auth.ts\n@@ -10,3 +10,4 @@\n+export const validateJWT = ..."
-  },
-  tags: ["auth", "bugfix"]
-})
+start_session({ project_path: "/absolute/path/to/project", agent_id: "github-copilot", name: "task-name" })
+```
 
-// After running commands
-log({ 
-  action: "cmd_run", 
-  agent_id: "claude-code", 
-  project_path: ".", 
-  content: { command: "npm test", exit_code: 0 }
-})
-
-// After decisions
-log({ 
-  action: "decision", 
-  agent_id: "claude-code", 
-  project_path: ".", 
-  content: { 
-    decision: "Use Zod for validation", 
-    rationale: "Already in dependencies" 
-  }
-})
-
-// Test results
-log({ 
-  action: "test_result", 
-  agent_id: "claude-code", 
-  project_path: ".", 
-  content: { test_suite: "auth.test.ts", status: "passed" }
-})
-
-// Track todos
-log({ 
-  action: "todos", 
-  agent_id: "claude-code", 
-  project_path: ".", 
+### log (use most)
+```js
+log({
+  action: "file_edit",
+  agent_id: "github-copilot",
+  project_path: "/absolute/path/to/project",
   content: {
-    items: [
-      { task: "Add input validation", status: "done" },
-      { task: "Write tests", status: "pending" }
-    ]
-  }
+    file_path: "src/auth.ts",
+    description: "Add JWT validation",
+    diff: "--- a/src/auth.ts\n+++ b/src/auth.ts\n@@ ..."
+  },
+  tags: ["auth"]
+})
+```
+Other actions: `cmd_run`, `decision`, `test_result`, `todos`, `plan_output`, `feedback`.
+
+### get_recent
+```js
+get_recent({ project_path: "/absolute/path/to/project", related_to: ["src/auth.ts"] })
+```
+
+### check_conflicts
+```js
+check_conflicts({ project_path: "/absolute/path/to/project", files: ["src/auth.ts"] })
+```
+
+### search_project_knowledge (pull context)
+```js
+search_project_knowledge({ project_path: "/absolute/path/to/project", intent: "debugging", query: "auth" })
+```
+
+### save_knowledge (store learnings)
+```js
+save_knowledge({
+  project_path: "/absolute/path/to/project",
+  knowledge_type: "pitfall",
+  title: "Avoid fs.readFileSync in handlers",
+  content: "Blocks event loop; causes timeouts"
 })
 ```
 
-**Action types:** `file_edit`, `cmd_run`, `decision`, `test_result`, `feedback`, `todos`, `plan_output`
-
-### start_session (DO THIS FIRST)
+### end_session
 ```js
-start_session({ 
-  project_path: ".", 
-  agent_id: "claude-code", 
-  name: "bugfix-auth",
-  description: "Fixing login timeout issue" 
-})
+end_session({ session_id: "abc-123", summary: "Fixed auth timeout; tests pass" })
 ```
 
-### get_recent (CHECK BEFORE STARTING)
-```js
-// See what other agents did recently
-get_recent({ project_path: "." })
-
-// Filter by files
-get_recent({ project_path: ".", related_to: ["src/auth.ts"] })
-
-// Filter by tags
-get_recent({ project_path: ".", tags: ["bugfix"] })
-```
-
-### check_conflicts (BEFORE EDITING)
-```js
-// Check if anyone else modified these files
-check_conflicts({ 
-  project_path: ".", 
-  files: ["src/auth.ts", "src/api.ts"] 
-})
-```
-
-### end_session (FINISH WITH SUMMARY)
-```js
-end_session({ 
-  session_id: "abc-123", 
-  summary: "Fixed timeout by optimizing DB query. Tests passing." 
-})
-```
-
-### get_tags (DISCOVER CATEGORIES)
-```js
-// See all tags used in the project
-get_tags({ project_path: "." })
-```
-
-## 📋 Typical Workflow Example
+## 📋 Tiny workflow
 
 ```js
-// 1. Start
-start_session({ project_path: ".", agent_id: "claude-code", name: "add-auth" })
-
-// 2. Check recent work
-get_recent({ project_path: "." })
-
-// 3. Before editing
-check_conflicts({ project_path: ".", files: ["src/auth.ts"] })
-
-// 4. After making changes
-log({ action: "file_edit", agent_id: "claude-code", project_path: ".", 
-     content: { file_path: "src/auth.ts", description: "Added JWT" } })
-
-// 5. After running tests
-log({ action: "cmd_run", agent_id: "claude-code", project_path: ".", 
-     content: { command: "npm test", exit_code: 0 } })
-
-// 6. Finish
-end_session({ session_id: "abc", summary: "Auth implemented and tested" })
+start_session({ project_path: "/absolute/path/to/project", agent_id: "github-copilot", name: "fix-auth" })
+search_project_knowledge({ project_path: "/absolute/path/to/project", intent: "debugging", query: "auth" })
+get_recent({ project_path: "/absolute/path/to/project" })
+check_conflicts({ project_path: "/absolute/path/to/project", files: ["src/auth.ts"] })
+log({ action: "file_edit", agent_id: "github-copilot", project_path: "/absolute/path/to/project", content: { file_path: "src/auth.ts", description: "Fix timeout" } })
+log({ action: "cmd_run", agent_id: "github-copilot", project_path: "/absolute/path/to/project", content: { command: "npm test", exit_code: 0 } })
+save_knowledge({ project_path: "/absolute/path/to/project", knowledge_type: "decision", title: "Use async DB client", content: "Prevents blocking" })
+end_session({ session_id: "abc-123", summary: "Auth fixed; tests green" })
 ```
-
-## ⚡ Remember
-
-- **LOG EVERYTHING SIGNIFICANT** — Don't make other agents guess
-- **Use tags** — Makes filtering easier later
-- **Include diffs** — Enables automatic stale detection
-- **Check conflicts** — Prevents overlapping work
-- **End with summary** — Documents what was accomplished

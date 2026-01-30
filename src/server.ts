@@ -9,7 +9,7 @@ import {
 
 import { loadConfig, ensureWormholeDir } from './config.js';
 import { initDatabase, cleanupOldEvents } from './db.js';
-import { LogSchema, GetRecentSchema, CheckConflictsSchema, CleanupSchema, StartSessionSchema, EndSessionSchema, ListSessionsSchema, SwitchSessionSchema, GetTagsSchema, GetSessionEventsSchema } from './schemas.js';
+import { LogSchema, GetRecentSchema, CheckConflictsSchema, CleanupSchema, StartSessionSchema, EndSessionSchema, ListSessionsSchema, SwitchSessionSchema, GetTagsSchema, GetSessionEventsSchema, SaveKnowledgeSchema, SearchProjectKnowledgeSchema } from './schemas.js';
 import { TOOL_DEFINITIONS } from './tools.js';
 import {
     handleLog,
@@ -21,7 +21,9 @@ import {
     handleListSessions,
     handleSwitchSession,
     handleGetTags,
-    handleGetSessionEvents
+    handleGetSessionEvents,
+    handleSaveKnowledge,
+    handleSearchProjectKnowledge
 } from './handlers.js';
 
 async function main() {
@@ -112,6 +114,16 @@ async function main() {
                 case 'get_session_events': {
                     const parsed = GetSessionEventsSchema.parse(args);
                     result = handleGetSessionEvents(parsed);
+                    break;
+                }
+                case 'save_knowledge': {
+                    const parsed = SaveKnowledgeSchema.parse(args);
+                    result = handleSaveKnowledge(parsed);
+                    break;
+                }
+                case 'search_project_knowledge': {
+                    const parsed = SearchProjectKnowledgeSchema.parse(args);
+                    result = handleSearchProjectKnowledge(parsed);
                     break;
                 }
                 default:

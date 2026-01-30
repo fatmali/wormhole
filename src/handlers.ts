@@ -14,8 +14,12 @@ import {
     createSession,
     getAllTags,
     getEventsBySessions,
+    createKnowledgeObject,
+    knowledgeObjectExists,
+    getEventsForKnowledgeGeneration,
+    searchProjectKnowledge,
 } from './db.js';
-import { Config, TimelineEvent } from './types.js';
+import { Config, TimelineEvent, KnowledgeType } from './types.js';
 import { formatEvents, formatRelativeTime, isEventRelevant, truncatePayload, extractPatch, filterStaleFileEdits } from './utils.js';
 import {
     LogSchema,
@@ -28,6 +32,8 @@ import {
     SwitchSessionSchema,
     GetTagsSchema,
     GetSessionEventsSchema,
+    SaveKnowledgeSchema,
+    SearchProjectKnowledgeSchema,
 } from './schemas.js';
 
 export function handleLog(args: z.infer<typeof LogSchema>, config: Config): string {
@@ -303,4 +309,51 @@ export function handleGetSessionEvents(args: z.infer<typeof GetSessionEventsSche
     }
 
     return formatEvents(events, 'normal', null);
+}
+
+export function handleSaveKnowledge(args: z.infer<typeof SaveKnowledgeSchema>): string {
+    // Validate title length
+    if (args.title.length > 200) {
+        return JSON.stringify({ 
+            success: false, 
+            error: 'Title must be 200 characters or less' 
+        });
+    }
+
+    // Check for duplicates
+    if (knowledgeObjectExists(args.project_path, args.knowledge_type, args.title)) {
+        return JSON.stringify({ 
+            success: false, 
+            error: 'Knowledge object with this title already exists',
+            duplicate: true
+        });
+    }
+
+    // Create the knowledge object
+    const id = createKnowledgeObject(
+        args.project_path,
+        args.knowledge_type,
+        args.title,
+        args.content,
+        args.source_event_id || null, // null if no source event
+        args.confidence || 1.0,
+        args.metadata
+    );
+
+    return JSON.stringify({ 
+        success: true, 
+        id,
+        knowledge_type: args.knowledge_type,
+        title: args.title
+    });
+}
+
+export function handleSearchProjectKnowledge(args: z.infer<typeof SearchProjectKnowledgeSchema>): string {
+    const results = searchProjectKnowledge(
+        args.project_path,
+        args.intent,
+        args.query
+    );
+
+    return JSON.stringify({ results });
 }

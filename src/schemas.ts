@@ -62,3 +62,19 @@ export const GetTagsSchema = z.object({
 export const GetSessionEventsSchema = z.object({
     session_ids: z.array(z.string()).describe('Array of session IDs to retrieve events for'),
 });
+
+export const SaveKnowledgeSchema = z.object({
+    project_path: z.string().describe('Project path'),
+    knowledge_type: z.enum(['decision', 'pitfall', 'constraint', 'convention']).describe('Type of knowledge'),
+    title: z.string().describe('Short summary of the knowledge (max 200 chars)'),
+    content: z.string().describe('Full details about the knowledge'),
+    confidence: z.number().min(0).max(1).optional().describe('Confidence level 0-1 (default: 1.0)'),
+    source_event_id: z.number().optional().describe('Optional: ID of the source event'),
+    metadata: z.record(z.any()).optional().describe('Optional: Additional metadata as key-value pairs'),
+});
+
+export const SearchProjectKnowledgeSchema = z.object({
+    project_path: z.string().describe('Project path'),
+    intent: z.enum(['debugging', 'feature', 'refactor', 'test', 'unknown']).describe('Agent intent for prioritizing results'),
+    query: z.string().optional().describe('Free-text hint to narrow results'),
+});

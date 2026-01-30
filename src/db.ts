@@ -3,7 +3,7 @@ import Database from 'better-sqlite3';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
-import { TimelineEvent, Config, QueryResult, Session } from './types.js';
+import { TimelineEvent, Config, QueryResult, Session, KnowledgeObject, KnowledgeType, SearchIntent, KnowledgeSearchResult } from './types.js';
 import { getWormholeDir, getArchiveDir } from './config.js';
 
 let db: Database.Database | null = null;
@@ -35,11 +35,25 @@ CREATE TABLE IF NOT EXISTS sessions (
   active INTEGER DEFAULT 1
 );
 
+CREATE TABLE IF NOT EXISTS knowledge_objects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_path TEXT NOT NULL,
+  knowledge_type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  source_event_id INTEGER,
+  confidence REAL DEFAULT 1.0,
+  created_at INTEGER NOT NULL,
+  metadata TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_timestamp ON timeline(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_project ON timeline(project_path);
 CREATE INDEX IF NOT EXISTS idx_session ON timeline(session_id);
 CREATE INDEX IF NOT EXISTS idx_project_timestamp ON timeline(project_path, timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_sessions_project ON sessions(project_path, active);
+CREATE INDEX IF NOT EXISTS idx_knowledge_project ON knowledge_objects(project_path, knowledge_type);
+CREATE INDEX IF NOT EXISTS idx_knowledge_source ON knowledge_objects(source_event_id);
 `;
 
 const INDEXES_AFTER_MIGRATION = `
@@ -86,6 +100,14 @@ export function getDatabase(): Database.Database {
         return initDatabase();
     }
     return db;
+}
+
+export function resetDatabase(): void {
+    if (db) {
+        db.close();
+        db = null;
+    }
+    activeSessions.clear();
 }
 
 // === Timeline Events ===
@@ -489,4 +511,178 @@ export function getEventCount(): number {
     const stmt = db.prepare(`SELECT COUNT(*) as count FROM timeline`);
     const result = stmt.get() as { count: number };
     return result.count;
+}
+
+// === Knowledge Objects ===
+
+export function createKnowledgeObject(
+    project_path: string,
+    knowledge_type: KnowledgeType,
+    title: string,
+    content: string,
+    source_event_id: number | null,
+    confidence: number = 1.0,
+    metadata?: Record<string, any>
+): number {
+    const db = getDatabase();
+    const created_at = Date.now();
+    const metadataStr = metadata ? JSON.stringify(metadata) : null;
+
+    const stmt = db.prepare(`
+        INSERT INTO knowledge_objects (project_path, knowledge_type, title, content, source_event_id, confidence, created_at, metadata)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(project_path, knowledge_type, title, content, source_event_id, confidence, created_at, metadataStr);
+    return result.lastInsertRowid as number;
+}
+
+export function getKnowledgeObjects(
+    project_path: string,
+    knowledge_type?: KnowledgeType
+): KnowledgeObject[] {
+    const db = getDatabase();
+    
+    let query = `SELECT * FROM knowledge_objects WHERE project_path = ?`;
+    const params: (string | number)[] = [project_path];
+    
+    if (knowledge_type) {
+        query += ` AND knowledge_type = ?`;
+        params.push(knowledge_type);
+    }
+    
+    query += ` ORDER BY created_at DESC`;
+    
+    const stmt = db.prepare(query);
+    return stmt.all(...params) as KnowledgeObject[];
+}
+
+export function knowledgeObjectExists(
+    project_path: string,
+    knowledge_type: KnowledgeType,
+    title: string
+): boolean {
+    const db = getDatabase();
+    
+    const stmt = db.prepare(`
+        SELECT COUNT(*) as count 
+        FROM knowledge_objects 
+        WHERE project_path = ? AND knowledge_type = ? AND title = ?
+    `);
+    
+    const result = stmt.get(project_path, knowledge_type, title) as { count: number };
+    return result.count > 0;
+}
+
+export function getEventsForKnowledgeGeneration(
+    project_path: string,
+    since?: number
+): TimelineEvent[] {
+    const db = getDatabase();
+    
+    let query = `SELECT * FROM timeline WHERE project_path = ? AND rejected = 0`;
+    const params: (string | number)[] = [project_path];
+    
+    if (since) {
+        query += ` AND timestamp > ?`;
+        params.push(since);
+    }
+    
+    query += ` ORDER BY timestamp ASC`;
+    
+    const stmt = db.prepare(query);
+    return stmt.all(...params) as TimelineEvent[];
+}
+
+// Intent to preferred knowledge types mapping
+const INTENT_TYPE_PRIORITY: Record<SearchIntent, KnowledgeType[]> = {
+    debugging: ['pitfall', 'constraint'],
+    feature: ['decision', 'convention'],
+    refactor: ['convention', 'constraint'],
+    test: ['pitfall'],
+    unknown: [],
+};
+
+/**
+ * Search project knowledge based on intent and optional query.
+ * Returns up to maxResults items, ranked by:
+ * 1. Intent-driven type preference (preferred types rank higher)
+ * 2. Confidence (higher confidence ranks higher)
+ * 3. Query match (if provided)
+ */
+export function searchProjectKnowledge(
+    project_path: string,
+    intent: SearchIntent,
+    query?: string,
+    maxResults: number = 10
+): KnowledgeSearchResult[] {
+    const db = getDatabase();
+    
+    // Get all knowledge objects for the project
+    const stmt = db.prepare(`
+        SELECT * FROM knowledge_objects 
+        WHERE project_path = ?
+        ORDER BY confidence DESC, created_at DESC
+    `);
+    
+    let knowledgeObjects = stmt.all(project_path) as KnowledgeObject[];
+    
+    // Apply query filtering if provided
+    if (query && query.trim()) {
+        const queryLower = query.toLowerCase().trim();
+        const queryTerms = queryLower.split(/\s+/).filter(t => t.length > 0);
+        
+        knowledgeObjects = knowledgeObjects.filter(obj => {
+            const titleLower = obj.title.toLowerCase();
+            const contentLower = obj.content.toLowerCase();
+            
+            // Match if any term is found in title or content
+            return queryTerms.some(term => 
+                titleLower.includes(term) || contentLower.includes(term)
+            );
+        });
+    }
+    
+    // Get preferred types for this intent
+    const preferredTypes = INTENT_TYPE_PRIORITY[intent] || [];
+    
+    // Score and sort knowledge objects
+    const scored = knowledgeObjects.map(obj => {
+        let score = obj.confidence;
+        
+        // Boost score for preferred types based on intent
+        const typeIndex = preferredTypes.indexOf(obj.knowledge_type);
+        if (typeIndex !== -1) {
+            // First preferred type gets 2.0 boost, second gets 1.5 boost
+            score += (2.0 - typeIndex * 0.5);
+        }
+        
+        // If query provided, boost exact matches in title
+        if (query && query.trim()) {
+            const queryLower = query.toLowerCase().trim();
+            if (obj.title.toLowerCase().includes(queryLower)) {
+                score += 0.5;
+            }
+        }
+        
+        return { obj, score };
+    });
+    
+    // Sort by score descending (deterministic: use id as tiebreaker)
+    scored.sort((a, b) => {
+        if (b.score !== a.score) {
+            return b.score - a.score;
+        }
+        // Tiebreaker: lower id first (deterministic)
+        return a.obj.id - b.obj.id;
+    });
+    
+    // Limit results and map to output format
+    return scored
+        .slice(0, maxResults)
+        .map(({ obj }) => ({
+            type: obj.knowledge_type,
+            summary: obj.title,
+            confidence: obj.confidence,
+        }));
 }

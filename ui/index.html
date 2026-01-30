@@ -140,6 +140,20 @@
                     <div id="active-files" class="list"></div>
                 </div>
             </div>
+
+            <div class="card card-wide">
+                <div class="card-header">
+                    <h2>Minimal workflow</h2>
+                </div>
+                <ol class="workflow-list">
+                    <li><code>start_session</code> when you begin.</li>
+                    <li>Pull context: <code>search_project_knowledge</code> + <code>get_recent</code>.</li>
+                    <li>Before edits: <code>check_conflicts</code>.</li>
+                    <li>During work: <code>log</code> every file_edit, cmd_run, decision, test_result, todos.</li>
+                    <li>Capture learnings: <code>save_knowledge</code> (decision/pitfall/convention/constraint).</li>
+                    <li>Finish with <code>end_session</code> + summary.</li>
+                </ol>
+            </div>
         </section>
 
         <!-- Timeline View -->

@@ -1187,6 +1187,8 @@ body {
     border-radius: var(--radius-md);
     padding: 20px;
     overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
     font-family: var(--font-mono);
     font-size: 0.9rem;
     line-height: 1.7;
@@ -1200,6 +1202,8 @@ body {
     color: var(--text-primary);
     background: none;
     padding: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 /* === TOOLS === */

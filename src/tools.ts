@@ -145,4 +145,54 @@ Or use any custom action type. Optional: add tags array to categorize events.`,
             required: ['session_ids'],
         },
     },
+    {
+        name: 'save_knowledge',
+        description: `Save a knowledge object for a project. Agents should analyze session events and extract important learnings, then save them as structured knowledge.
+
+Knowledge types:
+- decision: Explicit choices made (e.g., "Use TypeScript for type safety")
+- pitfall: Errors or failures to avoid (e.g., "Don't use sync fs operations in server code")
+- constraint: Limitations or restrictions (e.g., "API rate limit is 100 req/min")
+- convention: Patterns or practices to follow (e.g., "Use async/await instead of callbacks")
+
+Prevents duplicates: same title + type won't be saved twice.`,
+        inputSchema: {
+            type: 'object',
+            properties: {
+                project_path: { type: 'string', description: 'Project path' },
+                knowledge_type: { type: 'string', enum: ['decision', 'pitfall', 'constraint', 'convention'], description: 'Type of knowledge' },
+                title: { type: 'string', description: 'Short summary (max 200 chars)' },
+                content: { type: 'string', description: 'Full details about the knowledge' },
+                confidence: { type: 'number', description: 'Confidence level 0-1 (default: 1.0, optional)' },
+                source_event_id: { type: 'number', description: 'Optional: ID of source event' },
+                metadata: { type: 'object', description: 'Optional: Additional metadata' },
+            },
+            required: ['project_path', 'knowledge_type', 'title', 'content'],
+        },
+    },
+    {
+        name: 'search_project_knowledge',
+        description: `Search for relevant project knowledge based on agent intent and optional query.
+
+Returns up to 10 knowledge items, prioritized by:
+1. Intent-driven type preference:
+   - debugging: pitfall, constraint
+   - feature: decision, convention
+   - refactor: convention, constraint
+   - test: pitfall
+   - unknown: no preference
+2. Confidence level (higher ranks first)
+3. Query match (if provided)
+
+Results include: type, summary, confidence score.`,
+        inputSchema: {
+            type: 'object',
+            properties: {
+                project_path: { type: 'string', description: 'Project path' },
+                intent: { type: 'string', enum: ['debugging', 'feature', 'refactor', 'test', 'unknown'], description: 'Agent intent' },
+                query: { type: 'string', description: 'Optional: free-text search hint' },
+            },
+            required: ['project_path', 'intent'],
+        },
+    },
 ];

@@ -19,6 +19,7 @@ Keep your AI coding agents in sync. Wormhole gives Claude Code, GitHub Copilot, 
 - **Conflict Detection** - Know when agents touch the same files
 - **Stale Event Rejection** - Automatically filters out file edits that no longer exist in the current project state
 - **Web UI Visualization** - View sessions, timeline events, and insights with `npx wormhole ui`
+- **Knowledge Capture & Search** - Save decisions/pitfalls and surface them with intent-aware search
 
 ## Quick Start
 
@@ -26,6 +27,25 @@ Try instantly with npx (no installation required):
 
 ```bash
 npx wormhole-mcp
+```
+
+### Minimal Workflow (token-optimized)
+
+1) `start_session`
+2) Pull context: `search_project_knowledge` + `get_recent`
+3) Before edits: `check_conflicts`
+4) During work: `log` every file_edit/cmd_run/decision/test_result/todos
+5) Capture learnings: `save_knowledge` (decision/pitfall/convention/constraint)
+6) Finish: `end_session` with summary
+
+```javascript
+start_session({ project_path: ".", agent_id: "copilot", name: "fix-auth" })
+search_project_knowledge({ project_path: ".", intent: "debugging", query: "auth" })
+get_recent({ project_path: "." })
+check_conflicts({ project_path: ".", files: ["src/auth.ts"] })
+log({ action: "file_edit", agent_id: "copilot", project_path: ".", content: { file_path: "src/auth.ts", description: "Fix timeout" } })
+save_knowledge({ project_path: ".", knowledge_type: "decision", title: "Use async DB client", content: "Prevents blocking" })
+end_session({ session_id: "abc-123", summary: "Auth fixed; tests green" })
 ```
 
 ## Web UI
@@ -238,6 +258,33 @@ get_tags({ project_path: "/path/to/project" })
 // Output: 
 // tags:
 // bugfix (12)
+
+### `save_knowledge`
+
+Persist decisions, pitfalls, conventions, or constraints so agents don’t repeat mistakes.
+
+```javascript
+save_knowledge({
+  project_path: "/path/to/project",
+  knowledge_type: "pitfall",
+  title: "Avoid fs.readFileSync in handlers",
+  content: "Blocks event loop; causes timeouts",
+  confidence: 0.9
+})
+```
+
+### `search_project_knowledge`
+
+Intent-aware lookup of stored knowledge. Prefers types that match your intent.
+
+```javascript
+search_project_knowledge({
+  project_path: "/path/to/project",
+  intent: "debugging",
+  query: "auth"
+})
+// → [{ type: "pitfall", summary: "Avoid fs.readFileSync", confidence: 0.9 }]
+```
 // feature (8)
 // testing (5)
 // auth (3)

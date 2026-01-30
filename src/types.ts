@@ -25,6 +25,28 @@ export interface Session {
     active: boolean;
 }
 
+export type KnowledgeType = 'decision' | 'pitfall' | 'constraint' | 'convention';
+
+export type SearchIntent = 'debugging' | 'feature' | 'refactor' | 'test' | 'unknown';
+
+export interface KnowledgeObject {
+    id: number;
+    project_path: string;
+    knowledge_type: KnowledgeType;
+    title: string;
+    content: string;
+    source_event_id: number;
+    confidence: number;
+    created_at: number;
+    metadata: string | null;
+}
+
+export interface KnowledgeSearchResult {
+    type: KnowledgeType;
+    summary: string;
+    confidence: number;
+}
+
 export interface Config {
     retention_hours: number;
     max_payload_chars: number;
