@@ -413,14 +413,78 @@ Config file: `~/.wormhole/config.json`
 
 ## Token Optimization
 
-Wormhole minimizes token usage:
+Wormhole minimizes token usage for `get_recent` responses through four key strategies:
 
-- **Compact output** by default
-- **Delta queries** with `since_cursor`
-- **200-char** payload limits
-- **5 events** default limit
+### 1. Compact Output Format (Default)
 
-Typical task: ~400 tokens vs ~5,000 without optimization.
+Instead of returning raw JSON, events are formatted as single-line summaries:
+
+```
+# Compact (default) - ~35 chars per event
+[5m] claude: npm test → ✓
+
+# vs Full JSON - ~200+ chars per event
+{"id":42,"agent_id":"claude-code","action":"cmd_run","payload":"{\"command\":\"npm test\",\"exit_code\":0}","timestamp":1706621234567,"project_path":"/path/to/project","session_id":"abc-123"}
+```
+
+The `detail` parameter controls verbosity:
+- `minimal` (default) — Single-line summaries with symbols (✓/✗)
+- `normal` — Multi-line with key details
+- `full` — Complete JSON payloads
+
+### 2. Payload Truncation
+
+Content fields are truncated to 200 characters by default (`max_payload_chars` config):
+
+```javascript
+// Stored/displayed as:
+"Added authentication middleware with JWT validation and refresh token..."
+
+// Instead of full 2000+ char description
+```
+
+**Exception:** `diff` fields in `file_edit` events are never truncated—they're needed for stale event validation.
+
+### 3. Delta Queries
+
+Use `since_cursor` to fetch only events since your last query:
+
+```javascript
+// First call returns events + cursor
+get_recent({ project_path: "." })
+// → [5 events] + cursor: evt_42
+
+// Subsequent call returns only NEW events
+get_recent({ project_path: ".", since_cursor: "evt_42" })
+// → [0-2 events] instead of repeating all 5
+```
+
+This prevents re-sending the same context repeatedly.
+
+### 4. Low Default Limits
+
+- `default_limit: 5` — Returns only 5 most recent events
+- Agents can increase with `limit` param when needed
+
+### Token Comparison
+
+| Scenario | Without Optimization | With Optimization |
+|----------|---------------------|-------------------|
+| 5 events, first query | ~500-1000 tokens | ~100 tokens |
+| 5 events, delta query (2 new) | ~500-1000 tokens | ~40 tokens |
+| 10 events, full detail | ~2000+ tokens | ~800 tokens |
+
+### Configuration
+
+Adjust in `~/.wormhole/config.json`:
+
+```json
+{
+  "max_payload_chars": 200,
+  "default_detail": "minimal",
+  "default_limit": 5
+}
+```
 
 ## Architecture
 

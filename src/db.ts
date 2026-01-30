@@ -186,6 +186,23 @@ export function getRecentEvents(
     return { events, cursor };
 }
 
+export function getEventsBySessions(sessionIds: string[]): TimelineEvent[] {
+    const db = getDatabase();
+    if (sessionIds.length === 0) return [];
+
+    const placeholders = sessionIds.map(() => '?').join(',');
+    const query = `
+        SELECT * FROM timeline 
+        WHERE session_id IN (${placeholders})
+        ORDER BY timestamp ASC
+    `;
+    
+    const stmt = db.prepare(query);
+    const rows = stmt.all(...sessionIds) as TimelineEvent[];
+    
+    return rows;
+}
+
 export function getConflicts(
     project_path: string,
     time_window_mins: number = 60,

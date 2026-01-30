@@ -13,6 +13,7 @@ import {
     getActiveSession,
     createSession,
     getAllTags,
+    getEventsBySessions,
 } from './db.js';
 import { Config, TimelineEvent } from './types.js';
 import { formatEvents, formatRelativeTime, isEventRelevant, truncatePayload, extractPatch, filterStaleFileEdits } from './utils.js';
@@ -26,6 +27,7 @@ import {
     ListSessionsSchema,
     SwitchSessionSchema,
     GetTagsSchema,
+    GetSessionEventsSchema,
 } from './schemas.js';
 
 export function handleLog(args: z.infer<typeof LogSchema>, config: Config): string {
@@ -291,4 +293,14 @@ export function handleGetTags(args: z.infer<typeof GetTagsSchema>): string {
         }
         return `tags: ${tags.join(', ')}`;
     }
+}
+
+export function handleGetSessionEvents(args: z.infer<typeof GetSessionEventsSchema>): string {
+    const events = getEventsBySessions(args.session_ids);
+
+    if (events.length === 0) {
+        return 'no events found for these sessions';
+    }
+
+    return formatEvents(events, 'normal', null);
 }

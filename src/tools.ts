@@ -133,4 +133,16 @@ Or use any custom action type. Optional: add tags array to categorize events.`,
             },
             required: ['project_path'],
         },
-    },];
+    },
+    {
+        name: 'get_session_events',
+        description: 'Get all events for specific sessions.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                session_ids: { type: 'array', items: { type: 'string' }, description: 'Array of session IDs' },
+            },
+            required: ['session_ids'],
+        },
+    },
+];

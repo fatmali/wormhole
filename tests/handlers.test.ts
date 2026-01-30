@@ -201,5 +201,21 @@ describe('Request Handlers', () => {
             expect(result).toContain('switched to: S1');
             expect(db.getActiveSession('/path')?.id).toBe(s1);
         });
+
+        it('should get events for sessions', () => {
+            const s1 = db.createSession('/path', 'claude', 'S1');
+            const s2 = db.createSession('/path', 'claude', 'S2');
+            
+            db.addEvent('claude', 'cmd_run', '{"command":"echo 1"}', '/path', false, s1);
+            db.addEvent('claude', 'cmd_run', '{"command":"echo 2"}', '/path', false, s2);
+            db.addEvent('claude', 'cmd_run', '{"command":"echo 3"}', '/path', false, s1);
+
+            const args = { session_ids: [s1] };
+            const result = handlers.handleGetSessionEvents(args);
+
+            expect(result).toContain('echo 1');
+            expect(result).toContain('echo 3');
+            expect(result).not.toContain('echo 2');
+        });
     });
 });

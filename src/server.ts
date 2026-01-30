@@ -9,7 +9,7 @@ import {
 
 import { loadConfig, ensureWormholeDir } from './config.js';
 import { initDatabase, cleanupOldEvents } from './db.js';
-import { LogSchema, GetRecentSchema, CheckConflictsSchema, CleanupSchema, StartSessionSchema, EndSessionSchema, ListSessionsSchema, SwitchSessionSchema, GetTagsSchema } from './schemas.js';
+import { LogSchema, GetRecentSchema, CheckConflictsSchema, CleanupSchema, StartSessionSchema, EndSessionSchema, ListSessionsSchema, SwitchSessionSchema, GetTagsSchema, GetSessionEventsSchema } from './schemas.js';
 import { TOOL_DEFINITIONS } from './tools.js';
 import {
     handleLog,
@@ -20,7 +20,8 @@ import {
     handleEndSession,
     handleListSessions,
     handleSwitchSession,
-    handleGetTags
+    handleGetTags,
+    handleGetSessionEvents
 } from './handlers.js';
 
 async function main() {
@@ -106,6 +107,11 @@ async function main() {
                 case 'get_tags': {
                     const parsed = GetTagsSchema.parse(args);
                     result = handleGetTags(parsed);
+                    break;
+                }
+                case 'get_session_events': {
+                    const parsed = GetSessionEventsSchema.parse(args);
+                    result = handleGetSessionEvents(parsed);
                     break;
                 }
                 default:

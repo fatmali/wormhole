@@ -59,3 +59,6 @@ export const GetTagsSchema = z.object({
     project_path: z.string().describe('Project path'),
     with_counts: z.boolean().optional().describe('Include event counts per tag (default: true)'),
 });
+export const GetSessionEventsSchema = z.object({
+    session_ids: z.array(z.string()).describe('Array of session IDs to retrieve events for'),
+});
